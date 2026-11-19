@@ -18,7 +18,9 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   } catch {
     notFound();
   }
-  const eft = order.payments.some((p) => p.payment_method?.name?.includes('EFT'));
+  const eft = order.payments.some((p) => p.payment_method?.type?.endsWith('Check') && p.payment_method?.name?.includes('EFT'));
+  const paidOnline = order.payments.find((p) => p.payment_method?.session_required && p.status === 'completed');
+  const pickup = (order.fulfillments[0] as unknown as { pickup_point?: { name: string; address: { street?: string; city?: string }; opening_hours?: string } | null })?.pickup_point;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-14">
@@ -35,7 +37,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
             <p className="text-xs font-black uppercase tracking-[0.2em] text-ink/50">Order</p>
             <p className="font-display text-3xl font-extrabold">#{order.number}</p>
           </div>
-          <span className="chip bg-sun">{order.payment_status === 'paid' ? '✓ Paid' : eft ? '⏳ Awaiting EFT' : '💵 Pay on delivery'}</span>
+          <span className="chip bg-sun">{order.payment_status === 'paid' ? `✓ Paid${paidOnline ? ` via ${paidOnline.payment_method.name.split(' — ')[0]}` : ''}` : eft ? '⏳ Awaiting EFT' : '💵 Pay on delivery'}</span>
         </div>
         {eft && order.payment_status !== 'paid' && (
           <div className="rounded-2xl border-2 border-ink bg-cream p-4 text-sm">
@@ -63,6 +65,13 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
             <p className="font-bold">Delivering to</p>
             <p>{order.shipping_address.first_name} {order.shipping_address.last_name}, {order.shipping_address.address1}, {order.shipping_address.city} {order.shipping_address.postal_code}</p>
             {order.fulfillments[0]?.delivery_method && <p className="text-ink/60">via {order.fulfillments[0].delivery_method.name}</p>}
+            {pickup && (
+              <p className="mt-2 rounded-xl border-2 border-ink bg-cream p-3">
+                📍 <strong>Collect at {pickup.name}</strong><br />
+                {[pickup.address.street, pickup.address.city].filter(Boolean).join(', ')}{pickup.opening_hours ? ` · ${pickup.opening_hours}` : ''}<br />
+                <span className="text-xs text-ink/60">We’ll SMS you a collection code when your parcel arrives.</span>
+              </p>
+            )}
           </div>
         )}
       </div>

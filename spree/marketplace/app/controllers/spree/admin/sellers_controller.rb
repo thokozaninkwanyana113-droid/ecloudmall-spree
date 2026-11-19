@@ -53,7 +53,8 @@ module Spree
           :bbbee_level, :black_owned, :women_owned, :youth_owned, :disability_owned, :township_business,
           :primary_category, :founded_year, :team_size, :brand_color,
           :ships_nationwide, :offers_collection, :dispatch_days,
-          :commission_rate, :featured, :verified, :admin_notes, :logo, :banner
+          :commission_rate, :featured, :verified, :admin_notes, :logo, :banner,
+          :referred_by_partner_id, :referral_expires_at
         )
       end
     end

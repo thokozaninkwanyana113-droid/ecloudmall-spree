@@ -1,0 +1,57 @@
+<% month = params[:month].present? ? (Date.strptime(params[:month], '%Y-%m') rescue Date.current) : Date.current %>
+<% st = partner.statement(month: month.in_time_zone) %>
+<% money = ->(v) { Spree::Money.new(v, currency: st[:currency]).to_s } %>
+<div class="card mb-6">
+  <div class="card-header flex items-center justify-between">
+    <h5 class="card-title"><%= Spree.t('marketplace.admin.statement_for', month: l(st[:month], format: '%B %Y')) %></h5>
+    <span class="flex gap-2">
+      <%= link_to '←', edit_object_url(partner, month: (month << 1).strftime('%Y-%m')), class: 'btn btn-light btn-sm' %>
+      <%= link_to '→', edit_object_url(partner, month: (month >> 1).strftime('%Y-%m')), class: 'btn btn-light btn-sm' %>
+    </span>
+  </div>
+  <div class="card-body">
+    <h6 class="font-semibold mb-2"><%= Spree.t('marketplace.admin.carrier') %></h6>
+    <dl class="grid grid-cols-2 gap-2 mb-4">
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.parcels') %></dt><dd class="text-right font-medium"><%= st[:parcels] %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.rate_per_parcel') %></dt><dd class="text-right font-medium"><%= money.(st[:parcel_cost_rate]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.delivery_revenue') %></dt><dd class="text-right font-medium"><%= money.(st[:delivery_revenue]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.parcel_costs') %></dt><dd class="text-right font-medium"><%= money.(st[:parcel_costs]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.delivery_margin') %></dt><dd class="text-right font-semibold"><%= money.(st[:delivery_margin]) %></dd>
+    </dl>
+    <% if st[:next_tier] %>
+      <p class="text-sm text-gray-600 mb-4"><%= Spree.t('marketplace.admin.next_tier', parcels: st[:next_tier]['min_parcels'].to_i - st[:parcels], rate: money.(st[:next_tier]['parcel_cost'])) %></p>
+    <% end %>
+
+    <h6 class="font-semibold mb-2"><%= Spree.t('marketplace.admin.referrals') %></h6>
+    <dl class="grid grid-cols-2 gap-2 mb-4">
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.referred_sellers') %></dt><dd class="text-right font-medium"><%= st[:referred_sellers] %> (<%= st[:referred_sellers_live] %> live)</dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.referred_gmv') %></dt><dd class="text-right font-medium"><%= money.(st[:referred_gmv]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.referral_share', rate: partner.referral_gmv_share_rate.to_d.to_s('F')) %></dt><dd class="text-right font-medium"><%= money.(st[:referral_share]) %></dd>
+    </dl>
+
+    <% if partner.investor? %>
+      <h6 class="font-semibold mb-2"><%= Spree.t('marketplace.admin.investment') %></h6>
+      <dl class="grid grid-cols-2 gap-2 mb-4">
+        <dt class="text-gray-600"><%= Spree.t('marketplace.admin.investment_amount') %></dt><dd class="text-right font-medium"><%= money.(partner.investment_amount.to_d) %></dd>
+        <dt class="text-gray-600"><%= Spree.t('marketplace.admin.equity') %></dt><dd class="text-right font-medium"><%= partner.equity_percent.to_d.to_s('F') %>%</dd>
+        <dt class="text-gray-600"><%= Spree.t('marketplace.admin.credit_applied') %></dt><dd class="text-right font-medium"><%= money.(st[:logistics_credit_applied]) %></dd>
+        <dt class="text-gray-600"><%= Spree.t('marketplace.admin.credit_remaining') %></dt><dd class="text-right font-medium"><%= money.(st[:logistics_credit_remaining]) %></dd>
+      </dl>
+    <% end %>
+
+    <div class="flex justify-between border-t pt-3 font-semibold">
+      <span><%= Spree.t('marketplace.admin.payable_to_partner') %></span><span><%= money.(st[:payable_to_partner]) %></span>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.delivery_methods') %></h5></div>
+  <div class="card-body">
+    <ul class="flex flex-col gap-2">
+      <% partner.shipping_methods.each do |method| %>
+        <li class="flex justify-between"><span><%= method.name %></span><span class="badge badge-light"><%= method.pickup_point_provider.to_s.demodulize.presence || '—' %></span></li>
+      <% end %>
+    </ul>
+  </div>
+</div>

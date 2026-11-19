@@ -19,6 +19,14 @@ RSpec.describe Spree::Api::V3::Store::SellerApplicationsController, type: :contr
     expect(json_response[:id]).to eq(seller.prefixed_id)
   end
 
+  it 'attaches a live partner from a referral code' do
+    partner = create(:partner, store: store, code: 'PAXI')
+    post :create, params: { name: 'Kasi Kicks', email: 'kicks@example.co.za', province: 'GP', referral_code: 'paxi' }
+    expect(response).to have_http_status(:created)
+    expect(json_response[:referred_by]).to eq(partner.name)
+    expect(Spree::Seller.last.referred_by_partner).to eq(partner)
+  end
+
   it 'returns validation errors' do
     post :create, params: { name: '', email: 'nope', province: 'XX' }
     expect(response).to have_http_status(:unprocessable_content)

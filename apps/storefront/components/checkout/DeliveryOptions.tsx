@@ -4,7 +4,7 @@ import { rand } from '@/lib/format';
 
 const META: Record<string, { icon: string; eta: string }> = {
   Courier: { icon: '🚚', eta: '2–4 working days' },
-  Collect: { icon: '📦', eta: '3–7 working days · collect at a Paxi or Pargo point near you' },
+  Collect: { icon: '📦', eta: '3–7 working days · collect at a pickup point near you, open late & weekends' },
   Express: { icon: '⚡', eta: 'Next working day in Joburg, Pretoria, Cape Town & Durban' },
 };
 

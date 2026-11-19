@@ -1,0 +1,60 @@
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.partner') %></h5></div>
+  <div class="card-body">
+    <div class="grid grid-cols-2 gap-4">
+      <%= f.spree_text_field :name, required: true, autofocus: f.object.new_record? %>
+      <%= f.spree_text_field :code, required: true, help: Spree.t('marketplace.admin.code_help') %>
+      <%= f.spree_select :status, Spree::Partner::STATUSES.map { |s| [Spree.t("marketplace.partner_statuses.#{s}"), s] } %>
+      <%= f.spree_datetime_field :signed_at %>
+      <%= f.spree_text_field :website %>
+    </div>
+    <%= f.spree_text_area :description, rows: 2 %>
+    <div class="grid grid-cols-3 gap-2">
+      <%= f.spree_check_box :carrier %>
+      <%= f.spree_check_box :referral %>
+      <%= f.spree_check_box :investor %>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.carrier_terms') %></h5></div>
+  <div class="card-body grid grid-cols-2 gap-4">
+    <%= f.spree_number_field :parcel_cost, step: 0.01 %>
+    <div class="form-group">
+      <%= f.label :volume_tiers_text, Spree.t('marketplace.admin.volume_tiers'), class: 'form-label' %>
+      <%= text_field_tag 'partner[volume_tiers_text]', Array(f.object.volume_tiers).map { |t| "#{t['min_parcels']}:#{t['parcel_cost']}" }.join(', '), class: 'form-input', placeholder: '1000:42, 5000:38' %>
+      <p class="form-text mt-2"><%= Spree.t('marketplace.admin.volume_tiers_help') %></p>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.referral_terms') %></h5></div>
+  <div class="card-body grid grid-cols-3 gap-4">
+    <%= f.spree_number_field :referral_commission_rate, step: 0.25 %>
+    <%= f.spree_number_field :referral_gmv_share_rate, step: 0.25 %>
+    <%= f.spree_number_field :referral_months %>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.investment_terms') %></h5></div>
+  <div class="card-body grid grid-cols-3 gap-4">
+    <%= f.spree_number_field :investment_amount, step: 1000 %>
+    <%= f.spree_number_field :equity_percent, step: 0.1 %>
+    <%= f.spree_number_field :logistics_credit, step: 1000 %>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.contact') %></h5></div>
+  <div class="card-body">
+    <div class="grid grid-cols-3 gap-4">
+      <%= f.spree_text_field :contact_name %>
+      <%= f.spree_email_field :contact_email %>
+      <%= f.spree_text_field :contact_phone %>
+    </div>
+    <%= f.spree_text_area :notes, rows: 4 %>
+  </div>
+</div>

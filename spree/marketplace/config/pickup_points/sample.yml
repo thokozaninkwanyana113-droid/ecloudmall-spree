@@ -1,0 +1,310 @@
+# SAMPLE pickup points for demos only — NOT real partner locations.
+# Replace with the partner's live directory (PartnerFeed adapter) after onboarding.
+paxi:
+- id: S001
+  name: SAMPLE Paxi point · Orlando West, Soweto
+  street: Sample address 1 (demo data)
+  suburb: Orlando West
+  city: Soweto
+  postal_code: '1804'
+  province: GP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S002
+  name: SAMPLE Paxi point · Marshalltown, Johannesburg CBD
+  street: Sample address 2 (demo data)
+  suburb: Marshalltown
+  city: Johannesburg CBD
+  postal_code: '2001'
+  province: GP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S003
+  name: SAMPLE Paxi point · Ivory Park, Tembisa
+  street: Sample address 3 (demo data)
+  suburb: Ivory Park
+  city: Tembisa
+  postal_code: '1632'
+  province: GP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S004
+  name: SAMPLE Paxi point · Sunnyside, Pretoria
+  street: Sample address 4 (demo data)
+  suburb: Sunnyside
+  city: Pretoria
+  postal_code: '0002'
+  province: GP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S005
+  name: SAMPLE Paxi point · Umlazi, Durban
+  street: Sample address 5 (demo data)
+  suburb: Umlazi
+  city: Durban
+  postal_code: '4031'
+  province: KZN
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S006
+  name: SAMPLE Paxi point · Central, Pietermaritzburg
+  street: Sample address 6 (demo data)
+  suburb: Central
+  city: Pietermaritzburg
+  postal_code: '3201'
+  province: KZN
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S007
+  name: SAMPLE Paxi point · Khayelitsha, Cape Town
+  street: Sample address 7 (demo data)
+  suburb: Khayelitsha
+  city: Cape Town
+  postal_code: '7784'
+  province: WC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S008
+  name: SAMPLE Paxi point · Bellville, Cape Town
+  street: Sample address 8 (demo data)
+  suburb: Bellville
+  city: Cape Town
+  postal_code: '7530'
+  province: WC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S009
+  name: SAMPLE Paxi point · New Brighton, Gqeberha
+  street: Sample address 9 (demo data)
+  suburb: New Brighton
+  city: Gqeberha
+  postal_code: '6200'
+  province: EC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S010
+  name: SAMPLE Paxi point · Mdantsane, East London
+  street: Sample address 10 (demo data)
+  suburb: Mdantsane
+  city: East London
+  postal_code: '5219'
+  province: EC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S011
+  name: SAMPLE Paxi point · Seshego, Polokwane
+  street: Sample address 11 (demo data)
+  suburb: Seshego
+  city: Polokwane
+  postal_code: '0742'
+  province: LP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S012
+  name: SAMPLE Paxi point · Central, Thohoyandou
+  street: Sample address 12 (demo data)
+  suburb: Central
+  city: Thohoyandou
+  postal_code: 0950
+  province: LP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S013
+  name: SAMPLE Paxi point · KaNyamazane, Mbombela
+  street: Sample address 13 (demo data)
+  suburb: KaNyamazane
+  city: Mbombela
+  postal_code: '1214'
+  province: MP
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S014
+  name: SAMPLE Paxi point · Mangaung, Bloemfontein
+  street: Sample address 14 (demo data)
+  suburb: Mangaung
+  city: Bloemfontein
+  postal_code: '9301'
+  province: FS
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S015
+  name: SAMPLE Paxi point · Tlhabane, Rustenburg
+  street: Sample address 15 (demo data)
+  suburb: Tlhabane
+  city: Rustenburg
+  postal_code: 0309
+  province: NW
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S016
+  name: SAMPLE Paxi point · Paballelo, Upington
+  street: Sample address 16 (demo data)
+  suburb: Paballelo
+  city: Upington
+  postal_code: '8801'
+  province: NC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+- id: S017
+  name: SAMPLE Paxi point · Galeshewe, Kimberley
+  street: Sample address 17 (demo data)
+  suburb: Galeshewe
+  city: Kimberley
+  postal_code: '8345'
+  province: NC
+  hours: Mon–Sat 08:00–18:00, Sun 09:00–14:00
+  kind: store
+pargo:
+- id: S001
+  name: SAMPLE Pargo point · Orlando West, Soweto
+  street: Sample address 1 (demo data)
+  suburb: Orlando West
+  city: Soweto
+  postal_code: '1804'
+  province: GP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S002
+  name: SAMPLE Pargo point · Marshalltown, Johannesburg CBD
+  street: Sample address 2 (demo data)
+  suburb: Marshalltown
+  city: Johannesburg CBD
+  postal_code: '2001'
+  province: GP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S003
+  name: SAMPLE Pargo point · Ivory Park, Tembisa
+  street: Sample address 3 (demo data)
+  suburb: Ivory Park
+  city: Tembisa
+  postal_code: '1632'
+  province: GP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S004
+  name: SAMPLE Pargo point · Sunnyside, Pretoria
+  street: Sample address 4 (demo data)
+  suburb: Sunnyside
+  city: Pretoria
+  postal_code: '0002'
+  province: GP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S005
+  name: SAMPLE Pargo point · Umlazi, Durban
+  street: Sample address 5 (demo data)
+  suburb: Umlazi
+  city: Durban
+  postal_code: '4031'
+  province: KZN
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S006
+  name: SAMPLE Pargo point · Central, Pietermaritzburg
+  street: Sample address 6 (demo data)
+  suburb: Central
+  city: Pietermaritzburg
+  postal_code: '3201'
+  province: KZN
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S007
+  name: SAMPLE Pargo point · Khayelitsha, Cape Town
+  street: Sample address 7 (demo data)
+  suburb: Khayelitsha
+  city: Cape Town
+  postal_code: '7784'
+  province: WC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S008
+  name: SAMPLE Pargo point · Bellville, Cape Town
+  street: Sample address 8 (demo data)
+  suburb: Bellville
+  city: Cape Town
+  postal_code: '7530'
+  province: WC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S009
+  name: SAMPLE Pargo point · New Brighton, Gqeberha
+  street: Sample address 9 (demo data)
+  suburb: New Brighton
+  city: Gqeberha
+  postal_code: '6200'
+  province: EC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S010
+  name: SAMPLE Pargo point · Mdantsane, East London
+  street: Sample address 10 (demo data)
+  suburb: Mdantsane
+  city: East London
+  postal_code: '5219'
+  province: EC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S011
+  name: SAMPLE Pargo point · Seshego, Polokwane
+  street: Sample address 11 (demo data)
+  suburb: Seshego
+  city: Polokwane
+  postal_code: '0742'
+  province: LP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S012
+  name: SAMPLE Pargo point · Central, Thohoyandou
+  street: Sample address 12 (demo data)
+  suburb: Central
+  city: Thohoyandou
+  postal_code: 0950
+  province: LP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S013
+  name: SAMPLE Pargo point · KaNyamazane, Mbombela
+  street: Sample address 13 (demo data)
+  suburb: KaNyamazane
+  city: Mbombela
+  postal_code: '1214'
+  province: MP
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S014
+  name: SAMPLE Pargo point · Mangaung, Bloemfontein
+  street: Sample address 14 (demo data)
+  suburb: Mangaung
+  city: Bloemfontein
+  postal_code: '9301'
+  province: FS
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S015
+  name: SAMPLE Pargo point · Tlhabane, Rustenburg
+  street: Sample address 15 (demo data)
+  suburb: Tlhabane
+  city: Rustenburg
+  postal_code: 0309
+  province: NW
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S016
+  name: SAMPLE Pargo point · Paballelo, Upington
+  street: Sample address 16 (demo data)
+  suburb: Paballelo
+  city: Upington
+  postal_code: '8801'
+  province: NC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store
+- id: S017
+  name: SAMPLE Pargo point · Galeshewe, Kimberley
+  street: Sample address 17 (demo data)
+  suburb: Galeshewe
+  city: Kimberley
+  postal_code: '8345'
+  province: NC
+  hours: Mon–Fri 08:00–19:00, Sat 08:00–17:00
+  kind: store

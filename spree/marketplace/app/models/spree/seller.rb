@@ -35,6 +35,11 @@ module Spree
     has_many :products, class_name: 'Spree::Product', dependent: :nullify, inverse_of: :seller
     has_many :line_items, class_name: 'Spree::LineItem', dependent: :nullify, inverse_of: :seller
 
+    belongs_to :referred_by_partner, class_name: 'Spree::Partner', optional: true, inverse_of: :referred_sellers
+
+    # Set from a seller application: partner code entered at sign-up (e.g. at a Paxi / Pargo counter)
+    attr_reader :referral_code
+
     has_one_attached :logo, service: Spree.public_storage_service_name
     has_one_attached :banner, service: Spree.public_storage_service_name
 
@@ -56,6 +61,8 @@ module Spree
     validate :name_not_already_taken, on: :create
 
     before_validation :set_default_commission_rate, on: :create
+    before_validation :apply_referral_code, on: :create
+    validate :referral_code_recognised, on: :create
 
     scope :approved, -> { where(status: 'approved') }
     scope :pending, -> { where(status: 'pending') }
@@ -65,7 +72,7 @@ module Spree
     self.whitelisted_ransackable_attributes = %w[name slug status province city primary_category business_type
                                                  black_owned women_owned youth_owned disability_owned township_business
                                                  featured verified bbbee_level created_at approved_at]
-    self.whitelisted_ransackable_associations = %w[products]
+    self.whitelisted_ransackable_associations = %w[products referred_by_partner]
 
     state_machine :status, initial: :pending do
       event :approve do
@@ -120,6 +127,24 @@ module Spree
       (commission_rate || Spree::Marketplace::DEFAULT_COMMISSION_RATE).to_d
     end
 
+    # Resolved at validation time (attribute assignment order means the store may not be set yet).
+    def referral_code=(code)
+      @referral_code = code.to_s.strip.presence
+    end
+
+    def referral_active?(at = Time.current)
+      referred_by_partner.present? && (referral_expires_at.nil? || referral_expires_at >= at)
+    end
+
+    # Referred sellers pay the partner's reduced commission during the referral period.
+    def effective_commission_rate(at = Time.current)
+      if referral_active?(at) && referred_by_partner.referral_commission_rate
+        [referred_by_partner.referral_commission_rate.to_d, commission_rate_or_default].min
+      else
+        commission_rate_or_default
+      end
+    end
+
     # Sales of this seller's items across completed orders.
     # Payouts are only due on orders that have been paid in full.
     # @return [Hash] gross, commission and payout amounts plus counts
@@ -129,7 +154,7 @@ module Spree
       amount_sql = 'spree_line_items.price * spree_line_items.quantity'
       gross = items.sum(amount_sql).to_d
       paid_gross = paid_items.sum(amount_sql).to_d
-      commission = (paid_gross * commission_rate_or_default / 100).round(2)
+      commission = (paid_gross * effective_commission_rate / 100).round(2)
       {
         currency: currency,
         orders_count: items.distinct.count(:order_id),
@@ -157,6 +182,18 @@ module Spree
 
     def set_default_commission_rate
       self.commission_rate ||= Spree::Marketplace::DEFAULT_COMMISSION_RATE
+    end
+
+    def apply_referral_code
+      return if @referral_code.blank? || store.nil?
+
+      partner = Spree::Partner.where(store_id: store_id).find_by_referral_code(@referral_code)
+      self.referred_by_partner = partner
+      self.referral_expires_at = partner && partner.referral_months.to_i.positive? ? partner.referral_months.months.from_now : nil
+    end
+
+    def referral_code_recognised
+      errors.add(:referral_code, :invalid) if @referral_code.present? && referred_by_partner.nil?
     end
 
     def name_not_already_taken

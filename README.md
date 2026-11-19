@@ -7,7 +7,11 @@ businesses from all nine provinces, built on [Spree Commerce](https://spreecomme
 |---|---|
 | Marketplace engine (sellers, applications, commission & payouts, SA setup) | [`spree/marketplace`](spree/marketplace) |
 | Storefront (Next.js) | [`apps/storefront`](apps/storefront) |
-| Design & decisions | [`docs/plans/ecloudmall-marketplace.md`](docs/plans/ecloudmall-marketplace.md) |
+| Design & decisions | [`docs/plans/ecloudmall-marketplace.md`](docs/plans/ecloudmall-marketplace.md), [`docs/plans/ecloudmall-payments-and-logistics-partners.md`](docs/plans/ecloudmall-payments-and-logistics-partners.md) |
+| Paxi / Pargo partnership proposal | [`docs/partnerships/paxi-pargo-partnership.md`](docs/partnerships/paxi-pargo-partnership.md) |
+
+**Payments:** PayFast, Ozow, Yoco, manual EFT and pay on delivery. **Delivery:** courier, express, and
+collection at Paxi / Pargo pickup points.
 
 ### Run it locally
 
@@ -17,10 +21,10 @@ Requires Ruby 3.3+, Node 22+, pnpm, PostgreSQL and Redis.
 ./scripts/setup-ecloudmall.sh
 ```
 
-Then start the backend and storefront in two terminals:
+Then start the backend (web + background worker, which processes payment webhooks) and the storefront:
 
 ```bash
-cd server && bin/rails server
+cd server && bin/dev
 ```
 
 ```bash

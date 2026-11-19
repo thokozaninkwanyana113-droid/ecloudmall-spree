@@ -13,7 +13,7 @@ module Spree
             name tagline description story contact_name email phone whatsapp website instagram facebook tiktok
             province city township business_type size_band registration_number vat_number bbbee_level
             black_owned women_owned youth_owned disability_owned township_business primary_category
-            founded_year team_size ships_nationwide offers_collection
+            founded_year team_size ships_nationwide offers_collection referral_code
           ].freeze
 
           def create
@@ -28,6 +28,7 @@ module Spree
                 name: seller.name,
                 slug: seller.slug,
                 status: seller.status,
+                referred_by: seller.referred_by_partner&.name,
                 message: Spree.t('marketplace.application_received', name: seller.name)
               }, status: :created
             else

@@ -78,6 +78,10 @@ export function SellForm() {
         <Input label="Website (optional)" name="website" placeholder="www.yourbrand.co.za" />
       </Fieldset>
 
+      <Fieldset title="5. Referral (optional)" hint="Signed up at a partner counter (e.g. Paxi or Pargo)? Enter the code you were given to get a reduced commission for your first months.">
+        <Input label="Partner referral code" name="referral_code" placeholder="e.g. PAXI" error={err('referral_code')} />
+      </Fieldset>
+
       <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" name="consent" className="mt-1 h-5 w-5 accent-ink" required />
         <span>I agree to the EcloudMall seller terms and consent to EcloudMall processing my information under POPIA to assess my application.</span>

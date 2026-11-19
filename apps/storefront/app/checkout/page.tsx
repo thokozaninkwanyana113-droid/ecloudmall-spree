@@ -1,19 +1,24 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { spree } from '@/lib/spree';
+import { spree, type PickupPoint } from '@/lib/spree';
 import { getCart, getCustomer } from '@/lib/session';
 import { rand } from '@/lib/format';
 import { AddressForm } from '@/components/checkout/AddressForm';
 import { DeliveryOptions } from '@/components/checkout/DeliveryOptions';
 import { PaymentForm } from '@/components/checkout/PaymentForm';
+import { PickupPointPicker } from '@/components/checkout/PickupPointPicker';
 import { ProductArt } from '@/components/ProductArt';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Checkout' };
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
-  const [cart, customer, { edit }] = await Promise.all([getCart(), getCustomer(), searchParams]);
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string; payment?: string; pickup_q?: string }>;
+}) {
+  const [cart, customer, { edit, payment, pickup_q }] = await Promise.all([getCart(), getCustomer(), searchParams]);
   if (!cart || cart.items.length === 0) redirect('/cart');
 
   const za = await spree.countries.get('ZA', { expand: ['states'] });
@@ -21,14 +26,18 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const address = cart.shipping_address ?? customer?.default_shipping_address ?? null;
   const hasAddress = Boolean(cart.shipping_address && cart.email) && edit !== 'address';
   const rateSelected = cart.fulfillments.length > 0 && cart.fulfillments.every((f) => f.delivery_rates.some((r) => r.selected));
+  type PickupFulfillment = (typeof cart.fulfillments)[number] & { pickup_point?: PickupPoint | null; pickup_point_required?: boolean };
+  const fulfillments = cart.fulfillments as PickupFulfillment[];
+  const pickupMissing = fulfillments.some((f) => f.pickup_point_required && !f.pickup_point);
+  const deliveryReady = rateSelected && !pickupMissing;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="font-display text-5xl font-extrabold tracking-tight">Checkout</h1>
       <ol className="mt-4 flex flex-wrap gap-2 text-sm font-bold">
         {['Details', 'Delivery', 'Payment'].map((s, i) => {
-          const done = [hasAddress, hasAddress && rateSelected, false][i];
-          const active = [!hasAddress, hasAddress && !rateSelected, hasAddress && rateSelected][i];
+          const done = [hasAddress, hasAddress && deliveryReady, false][i];
+          const active = [!hasAddress, hasAddress && !deliveryReady, hasAddress && deliveryReady][i];
           return (
             <li key={s} className={`chip ${active ? 'chip-active' : done ? 'bg-lime' : ''}`}>
               {done ? '✓' : i + 1}. {s}
@@ -36,6 +45,14 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
           );
         })}
       </ol>
+
+      {payment && (
+        <p className="mt-6 rounded-2xl border-2 border-ink bg-sun px-5 py-4 font-bold" role="status">
+          {payment === 'canceled'
+            ? '↩️ Payment cancelled — no money was taken. Choose a payment method to try again.'
+            : '⚠️ That payment didn’t go through. No order was placed — please try again or choose another method.'}
+        </p>
+      )}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_400px]">
         <div className="space-y-6">
@@ -71,11 +88,15 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
 
           <Step n={2} title="Delivery" disabled={!hasAddress}>
             {hasAddress && <DeliveryOptions fulfillments={cart.fulfillments} />}
+            {hasAddress &&
+              fulfillments.map((f) => (
+                <PickupPointPicker key={f.id} fulfillment={f} postalCode={cart.shipping_address?.postal_code} search={pickup_q} />
+              ))}
           </Step>
 
-          <Step n={3} title="Payment" disabled={!hasAddress || !rateSelected}>
-            {hasAddress && rateSelected && (
-              <PaymentForm methods={cart.payment_methods.filter((m) => !m.session_required)} total={rand(cart.total, { cents: true })} />
+          <Step n={3} title="Payment" disabled={!hasAddress || !deliveryReady}>
+            {hasAddress && deliveryReady && (
+              <PaymentForm methods={cart.payment_methods} total={rand(cart.total, { cents: true })} />
             )}
           </Step>
         </div>
@@ -103,6 +124,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
               <div className="flex justify-between"><span>Subtotal</span><span className="font-bold">{rand(cart.item_total)}</span></div>
               {Number(cart.discount_total) !== 0 && <div className="flex justify-between text-veld"><span>Discounts</span><span className="font-bold">{rand(cart.discount_total)}</span></div>}
               <div className="flex justify-between"><span>Delivery</span><span className="font-bold">{rateSelected ? (Number(cart.delivery_total) === 0 ? 'FREE' : rand(cart.delivery_total)) : '—'}</span></div>
+              {fulfillments.map((f) => f.pickup_point && <p key={f.id} className="text-xs text-ink/70">📍 Collect at {f.pickup_point.name}</p>)}
               <div className="flex justify-between font-display text-2xl font-extrabold"><span>Total</span><span>{rand(cart.total)}</span></div>
               <p className="text-xs text-ink/60">Includes {rand(cart.included_tax_total)} VAT (15%)</p>
             </div>

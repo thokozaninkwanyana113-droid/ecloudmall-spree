@@ -77,9 +77,14 @@ export class ApiError extends Error {
 
 /** Minimal fetch helper for marketplace endpoints that are not part of @spree/sdk */
 async function marketplaceRequest<T>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PATCH',
   path: string,
-  { query, body }: { query?: Record<string, string | number | boolean | undefined>; body?: unknown } = {},
+  {
+    query,
+    body,
+    spreeToken,
+    token,
+  }: { query?: Record<string, string | number | boolean | undefined>; body?: unknown; spreeToken?: string; token?: string } = {},
 ): Promise<T> {
   const url = new URL(`/api/v3/store${path}`, SPREE_API_URL);
   for (const [k, v] of Object.entries(query ?? {})) {
@@ -91,6 +96,8 @@ async function marketplaceRequest<T>(
       'x-spree-api-key': SPREE_PUBLISHABLE_KEY,
       'content-type': 'application/json',
       accept: 'application/json',
+      ...(spreeToken ? { 'x-spree-token': spreeToken } : {}),
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
     cache: 'no-store',
@@ -103,7 +110,28 @@ async function marketplaceRequest<T>(
   return json as T;
 }
 
+export interface PickupPoint {
+  external_id: string;
+  name: string;
+  provider: string;
+  kind: string;
+  opening_hours: string | null;
+  address: { street?: string; suburb?: string; city?: string; postal_code?: string; province?: string; country_code: string };
+  metadata?: { sample?: boolean } & Record<string, unknown>;
+}
+
 export const marketplace = {
+  pickupPoints: {
+    list: (deliveryMethodId: string, params: { postal_code?: string; city?: string; q?: string; limit?: number }) =>
+      marketplaceRequest<{ data: PickupPoint[] }>('GET', `/delivery_methods/${deliveryMethodId}/pickup_points`, {
+        query: params,
+      }),
+    select: (cartId: string, fulfillmentId: string, pickupPointId: string, auth: { spreeToken?: string; token?: string }) =>
+      marketplaceRequest<unknown>('PATCH', `/carts/${cartId}/fulfillments/${fulfillmentId}/pickup_point`, {
+        body: { pickup_point_id: pickupPointId },
+        ...auth,
+      }),
+  },
   sellers: {
     list: (params: {
       page?: number;

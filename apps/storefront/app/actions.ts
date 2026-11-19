@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SpreeError } from '@spree/sdk';
 import { spree, marketplace, ApiError } from '@/lib/spree';
@@ -14,9 +15,19 @@ import {
   getAuthToken,
   getCartRef,
   rememberOrder,
+  setPendingPayment,
 } from '@/lib/session';
 
 export type ActionState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string[]>; message?: string };
+
+export type HostedRedirect = { method: 'GET' | 'POST'; url: string; fields: Record<string, string> };
+export type PaymentState = ActionState & { redirect?: HostedRedirect };
+
+async function siteOrigin() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+  const h = await headers();
+  return `${h.get('x-forwarded-proto') ?? 'http'}://${h.get('host')}`;
+}
 
 function errorMessage(e: unknown) {
   if (e instanceof SpreeError || e instanceof ApiError) return e.message;
@@ -119,11 +130,48 @@ export async function selectDelivery(formData: FormData) {
   revalidatePath('/checkout');
 }
 
-export async function placeOrder(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function selectPickupPoint(formData: FormData) {
+  const cart = await getCart();
+  const ref = await getCartRef();
+  if (!cart || !ref) return;
+  await marketplace.pickupPoints.select(
+    cart.id,
+    String(formData.get('fulfillment_id')),
+    String(formData.get('pickup_point_id')),
+    await cartOptions(),
+  );
+  revalidatePath('/checkout');
+}
+
+/** Starts a PayFast / Ozow / Yoco payment and returns the hosted-page redirect for the browser */
+async function startHostedPayment(cartId: string, paymentMethodId: string): Promise<PaymentState> {
+  const origin = await siteOrigin();
+  const ref = await getCartRef();
+  try {
+    const session = await spree.carts.paymentSessions.create(
+      cartId,
+      {
+        payment_method_id: paymentMethodId,
+        external_data: { return_url: `${origin}/checkout/payment/return`, cancel_url: `${origin}/checkout/payment/return` },
+      },
+      await cartOptions(),
+    );
+    const redirect = (session.external_data as { redirect?: HostedRedirect }).redirect;
+    if (!redirect) return { error: 'The payment provider did not respond. Please try another payment method.' };
+    if (ref) await setPendingPayment({ sessionId: session.id, orderId: session.order_id, cartId: ref.id, cartToken: ref.token });
+    return { ok: true, redirect };
+  } catch (e) {
+    return { error: errorMessage(e) };
+  }
+}
+
+export async function placeOrder(_prev: PaymentState, formData: FormData): Promise<PaymentState> {
   const cart = await getCart();
   if (!cart) return { error: 'Your cart has expired — please add items again.' };
   const paymentMethodId = String(formData.get('payment_method_id') ?? '');
   if (!paymentMethodId) return { error: 'Choose how you would like to pay.' };
+  const method = cart.payment_methods.find((m) => m.id === paymentMethodId);
+  if (method?.session_required) return startHostedPayment(cart.id, paymentMethodId);
   let orderId: string;
   try {
     const opts = await cartOptions();
@@ -238,6 +286,7 @@ export async function applyToSell(_prev: ActionState, formData: FormData): Promi
       disability_owned: bool('disability_owned'),
       township_business: bool('township_business'),
       offers_collection: bool('offers_collection'),
+      referral_code: str('referral_code'),
     });
     return { ok: true, message: res.message };
   } catch (e) {

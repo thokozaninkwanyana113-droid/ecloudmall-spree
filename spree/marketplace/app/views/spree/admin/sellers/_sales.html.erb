@@ -13,7 +13,7 @@
       <dd class="text-right font-medium"><%= Spree::Money.new(summary[:gross], currency: summary[:currency]) %></dd>
       <dt class="text-gray-600"><%= Spree.t('marketplace.admin.awaiting_payment') %></dt>
       <dd class="text-right font-medium"><%= Spree::Money.new(summary[:awaiting_payment], currency: summary[:currency]) %></dd>
-      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.commission', rate: seller.commission_rate_or_default.to_s('F')) %></dt>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.commission', rate: seller.effective_commission_rate.to_s('F')) %></dt>
       <dd class="text-right font-medium"><%= Spree::Money.new(summary[:commission], currency: summary[:currency]) %></dd>
       <dt class="text-gray-600"><%= Spree.t('marketplace.admin.payout_due') %></dt>
       <dd class="text-right font-semibold"><%= Spree::Money.new(summary[:payout], currency: summary[:currency]) %></dd>

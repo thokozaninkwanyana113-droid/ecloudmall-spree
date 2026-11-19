@@ -27,4 +27,20 @@ Rails.application.config.after_initialize do
   Spree.admin.tables.sellers.add :women_owned, label: 'marketplace.admin.women_owned', type: :boolean, sortable: true, filterable: true, default: false, position: 70
   Spree.admin.tables.sellers.add :featured, label: 'marketplace.admin.featured', type: :boolean, sortable: true, filterable: true, default: true, position: 80
   Spree.admin.tables.sellers.add :created_at, label: 'marketplace.admin.applied_at', type: :datetime, sortable: true, filterable: true, default: true, position: 90
+
+  Spree.admin.navigation.sidebar.add :partners,
+                                     label: 'marketplace.admin.partners',
+                                     url: :admin_partners_path,
+                                     icon: 'truck-delivery',
+                                     position: 36,
+                                     active: -> { controller_name == 'partners' },
+                                     if: -> { can?(:manage, Spree::Partner) }
+
+  Spree.admin.tables.register(:partners, model_class: Spree::Partner, search_param: :name_cont)
+  Spree.admin.tables.partners.add :name, label: :name, type: :link, sortable: true, filterable: true, default: true, position: 10
+  Spree.admin.tables.partners.add :code, label: 'marketplace.admin.code', type: :string, sortable: true, filterable: true, default: true, position: 20
+  Spree.admin.tables.partners.add :status, label: :status, type: :string, sortable: true, filterable: true, default: true, position: 30
+  Spree.admin.tables.partners.add :carrier, label: 'marketplace.admin.carrier', type: :boolean, sortable: true, default: true, position: 40
+  Spree.admin.tables.partners.add :referral, label: 'marketplace.admin.referral', type: :boolean, sortable: true, default: true, position: 50
+  Spree.admin.tables.partners.add :investor, label: 'marketplace.admin.investor', type: :boolean, sortable: true, default: true, position: 60
 end

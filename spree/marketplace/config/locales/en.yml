@@ -1,6 +1,9 @@
 en:
   activerecord:
     models:
+      spree/partner:
+        one: Partner
+        other: Partners
       spree/seller:
         one: Seller
         other: Sellers
@@ -37,6 +40,24 @@ en:
         logo: Logo
         admin_notes: Internal notes (not shown to customers)
         commission_rate: Commission rate (%)
+        referral_expires_at: Referral discount ends
+        referral_code: Referral code
+      spree/partner:
+        website: Website
+        carrier: Carrier (pickup / delivery network)
+        referral: Seller referral channel
+        investor: Investor
+        contact_name: Contact person
+        contact_email: Contact email
+        notes: Negotiation notes
+        parcel_cost: Base cost per parcel (R)
+        referral_commission_rate: Referred seller commission (%)
+        referral_gmv_share_rate: Partner share of referred GMV (%)
+        referral_months: Referral period (months)
+        investment_amount: Investment (R)
+        equity_percent: Equity (%)
+        logistics_credit: Logistics credit (R, in-kind)
+        signed_at: Agreement signed
   spree:
     seller: Seller
     sellers: Sellers
@@ -48,6 +69,16 @@ en:
         approved: Approved
         rejected: Rejected
         suspended: Suspended
+      pickup_points:
+        required: Choose a pickup point for your parcel before paying.
+      partner_statuses:
+        prospect: Prospect
+        in_talks: In talks
+        pilot: Pilot
+        active: Active
+        paused: Paused
+      payments:
+        hosted_admin_notice: "%{name} payments are taken on the provider's secure page by the customer. Record an offline payment with another method, or send the customer a payment link from the storefront."
       admin:
         sellers: Sellers
         seller: Seller
@@ -83,3 +114,36 @@ en:
         women_owned: Women-owned
         featured: Featured
         applied_at: Applied
+        partners: Partners
+        partner: Partner
+        new_partner: New partner
+        code: Code
+        code_help: Short code, also used as the seller referral code (e.g. PAXI)
+        carrier: Carrier
+        referral: Referral
+        investor: Investor
+        carrier_terms: Carrier terms
+        referral_terms: Seller referral programme
+        investment_terms: Investment
+        contact: Contact
+        volume_tiers: "Volume tiers (parcels per month : cost per parcel)"
+        volume_tiers_help: "e.g. 1000:42, 5000:38 — the best tier reached in a month applies to all its parcels"
+        statement_for: "Statement · %{month}"
+        parcels: Parcels
+        rate_per_parcel: Rate per parcel
+        delivery_revenue: Delivery fees collected
+        parcel_costs: Parcel costs owed
+        delivery_margin: Delivery margin
+        next_tier: "%{parcels} more parcels this month unlock %{rate} per parcel"
+        referrals: Seller referrals
+        referred_sellers: Referred sellers
+        referred_gmv: Referred sellers' paid GMV
+        referral_share: "Partner share (%{rate}%)"
+        investment: Investment
+        investment_amount: Invested
+        equity: Equity
+        credit_applied: Logistics credit applied
+        credit_remaining: Logistics credit remaining
+        payable_to_partner: Payable to partner this month
+        delivery_methods: Delivery methods
+        referred_by_partner: Referred by partner

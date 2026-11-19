@@ -9,7 +9,8 @@ Next.js 16 (App Router, React 19, Tailwind 4) storefront for EcloudMall, built o
 | `/shop` | Catalogue with search, category, province and impact (Black-/women-/youth-owned, township) filters, sorting, pagination |
 | `/products/[slug]` | Product page with seller card, delivery ETA, impact badges, more from this seller |
 | `/sellers`, `/sellers/[slug]` | Seller directory and branded seller storefronts |
-| `/cart`, `/checkout`, `/orders/[id]` | Cart with free-delivery meter and promo codes, 3-step checkout (address → delivery → payment), confirmation with EFT instructions |
+| `/cart`, `/checkout`, `/orders/[id]` | Cart with free-delivery meter and promo codes; 3-step checkout (address → delivery incl. Paxi/Pargo pickup-point picker → payment via PayFast, Ozow, Yoco, EFT or on delivery); confirmation with pickup and payment details |
+| `/checkout/payment/return` | Route handler the payment providers redirect back to. It asks the backend to verify the payment, then shows the order, a "confirming payment" page, or checkout again |
 | `/sell` | Seller pitch, fee calculator and application form |
 | `/account` | Register / log in, order history |
 

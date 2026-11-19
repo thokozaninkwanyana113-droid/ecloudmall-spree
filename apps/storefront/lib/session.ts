@@ -6,6 +6,7 @@ import { spree } from './spree';
 const CART_COOKIE = 'ecm_cart';
 const AUTH_COOKIE = 'ecm_auth';
 const ORDER_COOKIE = 'ecm_orders';
+const PAYMENT_COOKIE = 'ecm_payment';
 
 const cookieOptions = {
   httpOnly: true,
@@ -110,4 +111,24 @@ export async function orderToken(orderId: string) {
   } catch {
     return null;
   }
+}
+
+/** Hosted payment in flight: lets the return page find the session and order even if the cart was completed by a webhook */
+export type PendingPayment = { sessionId: string; orderId: string; cartId: string; cartToken: string };
+
+export async function setPendingPayment(p: PendingPayment) {
+  (await cookies()).set(PAYMENT_COOKIE, JSON.stringify(p), { ...cookieOptions, maxAge: 60 * 60 * 3 });
+}
+
+export async function getPendingPayment(): Promise<PendingPayment | null> {
+  try {
+    const raw = (await cookies()).get(PAYMENT_COOKIE)?.value;
+    return raw ? (JSON.parse(raw) as PendingPayment) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearPendingPayment() {
+  (await cookies()).delete(PAYMENT_COOKIE);
 }

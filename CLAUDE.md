@@ -13,6 +13,7 @@ Use `/project:create-plan` and `/project:update-plan` for plan management.
 
 Current plans:
 - `ecloudmall-marketplace.md` — EcloudMall multi-seller marketplace for SA SMMEs (`Spree::Seller`, never `Spree::Vendor`)
+- `ecloudmall-payments-and-logistics-partners.md` — PayFast/Ozow/Yoco hosted gateways, Paxi/Pargo partners, pickup points (never persisted), seller referrals
 - `6.0-cart-order-split.md` — Cart/Order model separation, polymorphic LineItem
 - `6.0-admin-spa.md` — React admin architecture, plugin system
 - `6.0-product-types.md` — Prototype → ProductType rename, MetafieldDefinition schema enforcement

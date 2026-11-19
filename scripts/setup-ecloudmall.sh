@@ -61,6 +61,6 @@ cat <<MSG
 
 ✔ EcloudMall is ready.
 
-  Backend + admin:  cd server && bin/rails server          → http://localhost:3000/admin  (spree@example.com / spree123)
+  Backend + admin:  cd server && bin/dev   (web + worker) → http://localhost:3000/admin  (spree@example.com / spree123)
   Storefront:       pnpm --filter @ecloudmall/storefront dev → http://localhost:3001
 MSG

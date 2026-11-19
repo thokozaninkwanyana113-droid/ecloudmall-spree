@@ -55,6 +55,8 @@
       <%= f.spree_number_field :commission_rate, step: 0.25, label: Spree.t('marketplace.admin.commission_rate') %>
       <%= f.spree_number_field :dispatch_days %>
       <%= f.spree_text_field :brand_color, placeholder: '#FF5A1F' %>
+      <%= f.spree_select :referred_by_partner_id, current_store.partners.order(:name).pluck(:name, :id), { include_blank: true, label: Spree.t('marketplace.admin.referred_by_partner') } %>
+      <%= f.spree_datetime_field :referral_expires_at %>
     </div>
     <div class="grid grid-cols-2 gap-2">
       <%= f.spree_check_box :featured %>
