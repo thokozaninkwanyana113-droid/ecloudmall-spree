@@ -1,0 +1,2 @@
+<% klass = { 'approved' => 'badge-success', 'pending' => 'badge-warning', 'rejected' => 'badge-danger', 'suspended' => 'badge-danger' }[seller.status] || 'badge-light' %>
+<span class="badge <%= klass %>"><%= Spree.t("marketplace.statuses.#{seller.status}") %></span>

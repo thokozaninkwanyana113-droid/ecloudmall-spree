@@ -1,0 +1,10 @@
+<div class="card mb-6">
+  <div class="card-header">
+    <h5 class="card-title"><%= Spree.t('marketplace.admin.seller') %></h5>
+  </div>
+  <div class="card-body">
+    <%= f.spree_select :seller_id,
+                       current_store.sellers.order(:name).pluck(:name, :id),
+                       { include_blank: Spree.t('marketplace.admin.house_product'), label: Spree.t('marketplace.admin.sold_by') } %>
+  </div>
+</div>

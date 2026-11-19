@@ -12,6 +12,7 @@ When proposing significant architectural changes:
 Use `/project:create-plan` and `/project:update-plan` for plan management.
 
 Current plans:
+- `ecloudmall-marketplace.md` — EcloudMall multi-seller marketplace for SA SMMEs (`Spree::Seller`, never `Spree::Vendor`)
 - `6.0-cart-order-split.md` — Cart/Order model separation, polymorphic LineItem
 - `6.0-admin-spa.md` — React admin architecture, plugin system
 - `6.0-product-types.md` — Prototype → ProductType rename, MetafieldDefinition schema enforcement
@@ -47,6 +48,8 @@ Completed plans:
 | `spree/core` | Ruby gem — models, services, business logic (`spree_core`) |
 | `spree/api` | Ruby gem — Store & Admin REST APIs (`spree_api`) |
 | `spree/emails` | Ruby gem — transactional emails (`spree_emails`, optional) |
+| `spree/marketplace` | Ruby gem — EcloudMall sellers, applications, commission (`spree_marketplace`) |
+| `apps/storefront` | EcloudMall Next.js storefront (`@ecloudmall/storefront`) |
 | `packages/sdk` | `@spree/sdk` — TypeScript Store API client |
 | `packages/admin-sdk` | `@spree/admin-sdk` — TypeScript Admin API client (private) |
 | `packages/sdk-core` | `@spree/sdk-core` — shared HTTP/retry/error layer (private) |

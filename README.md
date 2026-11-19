@@ -1,3 +1,37 @@
+# EcloudMall 🇿🇦
+
+**The marketplace for South African SMMEs** — township makers, Black-, women- and youth-owned brands and local
+businesses from all nine provinces, built on [Spree Commerce](https://spreecommerce.org).
+
+| Piece | Where |
+|---|---|
+| Marketplace engine (sellers, applications, commission & payouts, SA setup) | [`spree/marketplace`](spree/marketplace) |
+| Storefront (Next.js) | [`apps/storefront`](apps/storefront) |
+| Design & decisions | [`docs/plans/ecloudmall-marketplace.md`](docs/plans/ecloudmall-marketplace.md) |
+
+### Run it locally
+
+Requires Ruby 3.3+, Node 22+, pnpm, PostgreSQL and Redis.
+
+```bash
+./scripts/setup-ecloudmall.sh
+```
+
+Then start the backend and storefront in two terminals:
+
+```bash
+cd server && bin/rails server
+```
+
+```bash
+pnpm --filter @ecloudmall/storefront dev
+```
+
+- Storefront: http://localhost:3001
+- Admin: http://localhost:3000/admin (`spree@example.com` / `spree123`) → **Sellers** to approve applications
+
+---
+
 <p align="center">
   <h1 align="center">
   <a href="https://spreecommerce.org">

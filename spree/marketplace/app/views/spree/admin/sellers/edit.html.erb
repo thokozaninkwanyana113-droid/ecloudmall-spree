@@ -1,0 +1,31 @@
+<%= content_for :page_title do %>
+  <%= page_header_back_button(collection_url) %>
+  <%= @object.name %>
+  <%= render 'spree/admin/sellers/status_badge', seller: @object %>
+<% end %>
+
+<% content_for :page_actions do %>
+  <% if @object.can_approve? %>
+    <%= button_to Spree.t('marketplace.admin.approve'), spree.approve_admin_seller_path(@object), method: :put, class: 'btn btn-primary', form: { class: 'inline' } %>
+  <% end %>
+  <% if @object.can_reject? %>
+    <%= button_to Spree.t('marketplace.admin.reject'), spree.reject_admin_seller_path(@object), method: :put, class: 'btn btn-light', form: { class: 'inline' }, data: { turbo_confirm: Spree.t('marketplace.admin.confirm_reject') } %>
+  <% end %>
+  <% if @object.can_suspend? %>
+    <%= button_to Spree.t('marketplace.admin.suspend'), spree.suspend_admin_seller_path(@object), method: :put, class: 'btn btn-danger', form: { class: 'inline' }, data: { turbo_confirm: Spree.t('marketplace.admin.confirm_suspend') } %>
+  <% end %>
+<% end %>
+
+<%= form_with model: @object, url: object_url, scope: :seller, id: "edit_seller_#{@object.id}", multipart: true do |f| %>
+  <div class="grid grid-cols-12 gap-6">
+    <div class="col-span-12 lg:col-span-8">
+      <%= render 'spree/admin/shared/error_messages', target: @object %>
+      <%= render 'form', f: f %>
+      <%= render 'spree/admin/shared/edit_resource_links', f: f %>
+    </div>
+    <div class="col-span-12 lg:col-span-4">
+      <%= render 'spree/admin/sellers/sales', seller: @object %>
+      <%= render 'spree/admin/sellers/products', seller: @object %>
+    </div>
+  </div>
+<% end %>
