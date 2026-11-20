@@ -42,6 +42,16 @@
     <div class="flex justify-between border-t pt-3 font-semibold">
       <span><%= Spree.t('marketplace.admin.payable_to_partner') %></span><span><%= money.(st[:payable_to_partner]) %></span>
     </div>
+    <% if month.end_of_month < Date.current %>
+      <% closed = Spree::LedgerEntry.exists?(idempotency_key: ["parcel_costs:#{partner.id}:#{month.strftime('%Y-%m')}", "referral_share:#{partner.id}:#{month.strftime('%Y-%m')}"]) %>
+      <% if closed %>
+        <p class="mt-3 text-sm text-gray-600"><%= Spree.t('marketplace.finance.month_already_closed') %></p>
+      <% else %>
+        <%= link_to Spree.t('marketplace.finance.close_month'), spree.close_month_admin_partner_path(partner, month: month.strftime('%Y-%m')), data: { turbo_method: :put, turbo_confirm: Spree.t('marketplace.finance.confirm_close_month') }, class: 'btn btn-primary w-full mt-3' %>
+      <% end %>
+    <% else %>
+      <p class="mt-3 text-sm text-gray-600"><%= Spree.t('marketplace.finance.month_open') %></p>
+    <% end %>
   </div>
 </div>
 

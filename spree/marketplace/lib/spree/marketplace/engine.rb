@@ -5,6 +5,8 @@ module Spree
       engine_name 'spree_marketplace'
 
       config.autoload_paths += %W[#{config.root}/lib]
+      config.paths.add 'app/subscribers', eager_load: true
+      config.paths.add 'app/services', eager_load: true
 
       initializer 'spree_marketplace.permitted_attributes' do
         Spree::PermittedAttributes.product_attributes << :seller_id unless Spree::PermittedAttributes.product_attributes.include?(:seller_id)
@@ -17,6 +19,8 @@ module Spree
         Spree::Marketplace::Engine.register_gateways if Spree.payment_methods
 
         Spree::Product.include(Spree::Marketplace::ProductSeller) unless Spree::Product.include?(Spree::Marketplace::ProductSeller)
+        Spree::Seller.include(Spree::Marketplace::Payee) unless Spree::Seller.include?(Spree::Marketplace::Payee)
+        Spree::Partner.include(Spree::Marketplace::Payee) unless Spree::Partner.include?(Spree::Marketplace::Payee)
         Spree::Store.include(Spree::Marketplace::StoreSellers) unless Spree::Store.include?(Spree::Marketplace::StoreSellers)
         Spree::LineItem.include(Spree::Marketplace::LineItemSeller) unless Spree::LineItem.include?(Spree::Marketplace::LineItemSeller)
         Spree::ShippingMethod.include(Spree::Marketplace::ShippingMethodPartner) unless Spree::ShippingMethod.include?(Spree::Marketplace::ShippingMethodPartner)
@@ -34,6 +38,7 @@ module Spree
         Spree::Marketplace::Engine.register_gateways
 
         Spree.permissions.assign(:default, [Spree::PermissionSets::MarketplaceCustomer])
+        Spree.subscribers << Spree::MarketplaceLedgerSubscriber unless Spree.subscribers.include?(Spree::MarketplaceLedgerSubscriber)
 
         Spree.api.product_serializer = 'Spree::Api::V3::MarketplaceProductSerializer'
 

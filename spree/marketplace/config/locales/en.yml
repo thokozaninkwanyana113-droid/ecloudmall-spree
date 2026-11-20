@@ -1,6 +1,12 @@
 en:
   activerecord:
     models:
+      spree/payout_batch:
+        one: Payout run
+        other: Payout runs
+      spree/bank_account:
+        one: Bank account
+        other: Bank accounts
       spree/partner:
         one: Partner
         other: Partners
@@ -69,6 +75,68 @@ en:
         approved: Approved
         rejected: Rejected
         suspended: Suspended
+      finance:
+        title: Finance
+        balances: What we owe
+        sync: Re-sync ledger
+        synced: Ledger re-synced with recent orders and refunds
+        new_batch: New payout run
+        batch_created:
+          one: Payout run created with 1 payout
+          other: "Payout run created with %{count} payouts"
+        batch_approve: Payout run approved — download the bank file next
+        batch_cancel: Payout run cancelled
+        batch_paid: Payout run marked paid and ledgers updated
+        transition_failed: "That action isn't available while the run is %{status}"
+        approve_first: Approve the run before downloading the bank file
+        payout_failed: "Payout %{reference} marked failed; the amount is owed to the payee again"
+        available_total: Available to pay out now
+        pending_total: "On hold (%{days}-day returns window)"
+        blocked_total: Due but missing verified bank details
+        payee: Payee
+        type: Type
+        available: Available
+        pending: On hold
+        payable: Payable now
+        paid_out: Paid out to date
+        bank: Bank
+        verified: Bank verified
+        unverified: Bank not verified
+        needs_bank: Needs verified bank
+        nothing_owed: Nothing owed yet — balances appear when orders are paid.
+        payout_runs: Payout runs
+        all_runs: All runs
+        recent_entries: Latest ledger entries
+        run: Run
+        payouts: Payouts
+        total: Amount
+        created: Created
+        reference: Reference
+        approve: Approve
+        download_csv: Download bank CSV
+        mark_paid: Mark all paid
+        confirm_paid: Mark every pending payout in this run as paid? Only do this once the bank confirms the batch.
+        cancel: Cancel run
+        mark_failed: Mark failed
+        failure_reason: Reason (e.g. account closed)
+        no_payouts: No payees are due a payout right now.
+        blocked: Due, but no verified bank account
+        batch_help: "Review the amounts, approve, download the bank CSV and upload it to your bank's bulk payments. When the bank confirms, mark the run paid — each payee's ledger is debited. Mark any bounced transfer failed and it is owed again."
+        balance_and_bank: Balance & payouts
+        add_bank: Add bank account
+        change_bank: Change bank account
+        save_bank: Save bank account
+        bank_saved: Bank account saved. Verify it before the next payout run.
+        verify_bank: Mark bank account verified
+        confirm_verify: Have you confirmed these bank details with the account holder (e.g. a bank-stamped letter or a R1 verification payment)?
+        bank_verified: Bank account verified
+        close_month: Close month & accrue partner payout
+        confirm_close_month: Record this month's partner statement in the ledger? It will be paid in the next payout run.
+        month_closed:
+          one: "%{month} closed: 1 ledger entry recorded"
+          other: "%{month} closed: %{count} ledger entries recorded"
+        month_already_closed: This month is closed and recorded in the ledger.
+        month_open: The month is still open; close it after month end to accrue the partner's payout.
       pickup_points:
         required: Choose a pickup point for your parcel before paying.
       partner_statuses:
@@ -98,7 +166,7 @@ en:
         gross_sales: Gross sales
         awaiting_payment: Awaiting payment
         commission: "Commission (%{rate}%)"
-        payout_due: Payout due
+        payout_due: Earned on paid orders
         business: Business
         ownership: Ownership & impact
         contact_and_location: Contact & location

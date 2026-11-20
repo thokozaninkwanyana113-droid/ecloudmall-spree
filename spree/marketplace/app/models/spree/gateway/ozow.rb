@@ -73,6 +73,14 @@ module Spree
       payment_session
     end
 
+    # Ozow refunds are paid out by bank transfer or from the Ozow merchant portal. Recording the refund here
+    # still claws it back from the seller's ledger and shows it to the customer.
+    def credit(_money_cents, *args)
+      response_code, = credit_arguments(args)
+      Spree::PaymentResponse.new(true, 'Ozow: refund recorded — pay it from the Ozow merchant portal or by EFT', {},
+                                 test: test_mode?, authorization: "ozow-refund-#{response_code}-#{SecureRandom.hex(4)}")
+    end
+
     def parse_webhook_event(raw_body, _headers)
       data = URI.decode_www_form(raw_body.to_s).to_h
       raise WebhookSignatureError, 'Invalid Ozow hash' unless valid_response_hash?(data)

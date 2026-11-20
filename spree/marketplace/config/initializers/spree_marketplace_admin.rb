@@ -43,4 +43,12 @@ Rails.application.config.after_initialize do
   Spree.admin.tables.partners.add :carrier, label: 'marketplace.admin.carrier', type: :boolean, sortable: true, default: true, position: 40
   Spree.admin.tables.partners.add :referral, label: 'marketplace.admin.referral', type: :boolean, sortable: true, default: true, position: 50
   Spree.admin.tables.partners.add :investor, label: 'marketplace.admin.investor', type: :boolean, sortable: true, default: true, position: 60
+
+  Spree.admin.navigation.sidebar.add :finance,
+                                     label: 'marketplace.finance.title',
+                                     url: :admin_finance_path,
+                                     icon: 'cash',
+                                     position: 37,
+                                     active: -> { %w[finance payout_batches].include?(controller_name) },
+                                     if: -> { can?(:manage, Spree::PayoutBatch) }
 end

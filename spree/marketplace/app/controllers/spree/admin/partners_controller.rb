@@ -3,6 +3,17 @@ module Spree
     # Marketplace → Partners: logistics / referral / investor partners (e.g. Paxi, Pargo),
     # their commercial terms and a monthly statement computed from real orders.
     class PartnersController < ResourceController
+      # Turns a finished month's statement into ledger entries so the partner is paid in the next payout run.
+      def close_month
+        month = Date.strptime(params[:month].to_s, '%Y-%m')
+        entries = Spree::Marketplace::Ledger.close_partner_month!(@object, month: month)
+        flash[:success] = Spree.t('marketplace.finance.month_closed', month: month.strftime('%B %Y'), count: entries.size)
+      rescue ArgumentError, Date::Error => e
+        flash[:error] = e.message
+      ensure
+        redirect_to edit_object_url(@object, month: params[:month]), status: :see_other
+      end
+
       private
 
       def build_resource

@@ -78,4 +78,37 @@ RSpec.describe Spree::Gateway::Payfast do
       expect(gateway.parse_webhook_event(itn('payment_status' => 'CANCELLED'), {})[:action]).to eq(:canceled)
     end
   end
+
+  describe '#credit (refunds)' do
+    before do
+      session.update_columns(external_data: session.external_data.merge('provider_reference' => '1089250'))
+    end
+
+    it 'simulates refunds in sandbox, where PayFast offers none' do
+      response = gateway.credit(5000, session.external_id, {})
+      expect(response).to be_success
+      expect(response.message).to include('sandbox')
+    end
+
+    it 'calls the PayFast Refunds API with SDK-compatible signed headers when live' do
+      gateway.update!(preferred_test_mode: false)
+      stub = stub_request(:post, 'https://api.payfast.co.za/refunds/1089250')
+             .with { |req| JSON.parse(req.body) == { 'amount' => 5000, 'reason' => 'Refund from EcloudMall', 'notify_buyer' => 1 } && req.headers['Merchant-Id'] == '10000100' && req.headers['Signature'].present? }
+             .to_return(status: 200, body: { code: 200, status: 'success', data: { response: true } }.to_json)
+
+      expect(gateway.credit(5000, session.external_id, {})).to be_success
+      expect(stub).to have_been_requested
+    end
+
+    it 'signs API requests over sorted headers, body and passphrase' do
+      ts = Time.utc(2026, 11, 20, 10, 0, 0)
+      headers = gateway.api_headers({ 'amount' => 5000 }, timestamp: ts)
+      expected = Digest::MD5.hexdigest("amount=5000&merchant-id=10000100&passphrase=jt7NOE43FZPn&timestamp=#{CGI.escape(ts.strftime('%Y-%m-%dT%H:%M:%S%z'))}&version=v1")
+      expect(headers['signature']).to eq(expected)
+    end
+
+    it 'accepts the 3-argument call Spree::Refund makes for gateways without payment profiles' do
+      expect(gateway.credit(100, session.external_id, originator: nil)).to be_success
+    end
+  end
 end

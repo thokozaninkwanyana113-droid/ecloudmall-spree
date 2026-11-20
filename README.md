@@ -11,7 +11,12 @@ businesses from all nine provinces, built on [Spree Commerce](https://spreecomme
 | Paxi / Pargo partnership proposal | [`docs/partnerships/paxi-pargo-partnership.md`](docs/partnerships/paxi-pargo-partnership.md) |
 
 **Payments:** PayFast, Ozow, Yoco, manual EFT and pay on delivery. **Delivery:** courier, express, and
-collection at Paxi / Pargo pickup points.
+collection at Paxi / Pargo pickup points. **Money out:** ledger, refunds with seller clawback, and payout runs
+to sellers and partners (Admin → Finance) — see [`docs/plans/ecloudmall-funds-flow.md`](docs/plans/ecloudmall-funds-flow.md).
+
+**CI:** `tests.yml` runs the marketplace engine specs (PostgreSQL + MySQL) and Brakeman alongside Spree's;
+`packages.yml` typechecks, tests and builds the storefront; `ecloudmall-e2e.yml` boots the full stack and runs
+Playwright smoke tests.
 
 ### Run it locally
 

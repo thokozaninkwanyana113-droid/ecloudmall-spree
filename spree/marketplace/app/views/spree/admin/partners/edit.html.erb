@@ -16,3 +16,10 @@
     </div>
   </div>
 <% end %>
+
+<div class="grid grid-cols-12 gap-6 mt-6">
+  <div class="col-span-12 lg:col-start-8 lg:col-span-5">
+    <%= render 'spree/admin/bank_accounts/card', owner: @object,
+               update_url: spree.admin_partner_bank_account_path(@object), verify_url: spree.verify_admin_partner_bank_account_path(@object) %>
+  </div>
+</div>

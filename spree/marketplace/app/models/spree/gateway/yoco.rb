@@ -99,7 +99,8 @@ module Spree
       raise WebhookSignatureError, 'Malformed payload'
     end
 
-    def credit(money, _source, response_code, _options = {})
+    def credit(money, *args)
+      response_code, = credit_arguments(args)
       session = payment_sessions.find_by(external_id: response_code)
       checkout_id = session&.external_data&.dig('checkout_id')
       return super if checkout_id.blank?

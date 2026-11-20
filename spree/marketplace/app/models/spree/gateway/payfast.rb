@@ -15,6 +15,7 @@ module Spree
   class Gateway::Payfast < Gateway
     include Spree::Marketplace::HostedPaymentGateway
 
+    API_HOST = 'https://api.payfast.co.za'.freeze
     LIVE_HOST = 'https://www.payfast.co.za'.freeze
     SANDBOX_HOST = 'https://sandbox.payfast.co.za'.freeze
 
@@ -98,8 +99,48 @@ module Spree
         action = :failed
       end
 
-      session.update_columns(external_data: session.external_data.merge('provider_reference' => data['pf_payment_id']))
+      session.update_columns(external_data: session.external_data.merge(
+        'provider_reference' => data['pf_payment_id'], 'provider_fee' => data['amount_fee'], 'provider_net' => data['amount_net']
+      ).compact)
       webhook_result(action, session)
+    end
+
+    # Refund back to the shopper via PayFast's Refunds API (POST /refunds/{pf_payment_id}).
+    # Request shape and signing follow PayFast's official SDK (Services/Refunds.php, Request.php,
+    # Auth::generateApiSignature). PayFast offers no refunds in sandbox, so test mode records a simulated refund.
+    def credit(money_cents, *args)
+      response_code, options = credit_arguments(args)
+      session = payment_sessions.find_by(external_id: response_code)
+      pf_payment_id = session&.external_data&.dig('provider_reference')
+      return Spree::PaymentResponse.new(false, 'PayFast: original PayFast payment id not found for this payment', {}, test: test_mode?) if pf_payment_id.blank?
+
+      if preferred_test_mode
+        return Spree::PaymentResponse.new(true, 'PayFast sandbox: refund simulated (PayFast has no sandbox refunds)', {},
+                                          test: true, authorization: "pf-sandbox-refund-#{SecureRandom.hex(6)}")
+      end
+
+      body = { 'amount' => money_cents.to_i, 'reason' => refund_reason(options), 'notify_buyer' => 1 }
+      response = http_client.post_json("#{API_HOST}/refunds/#{pf_payment_id}", body, headers: api_headers(body))
+      if response.success?
+        Spree::PaymentResponse.new(true, 'PayFast: refund submitted', response.json || {}, authorization: response.json&.dig('data', 'response').to_s.presence || pf_payment_id)
+      else
+        Spree::PaymentResponse.new(false, "PayFast refund failed: #{response.json&.dig('data', 'message') || response.status}", response.json || {})
+      end
+    end
+
+    def refund_reason(options)
+      refund = options[:originator]
+      (refund.respond_to?(:reason) ? refund.reason&.name : nil).presence || 'Refund from EcloudMall'
+    end
+
+    # merchant-id / version / timestamp headers + signature = MD5 of all header and body values plus the
+    # passphrase, sorted by key, PHP-urlencoded (payfast-php-sdk Auth::generateApiSignature).
+    def api_headers(body, timestamp: Time.current)
+      headers = { 'merchant-id' => preferred_merchant_id.to_s, 'version' => 'v1', 'timestamp' => timestamp.strftime('%Y-%m-%dT%H:%M:%S%z') }
+      signed = headers.merge(body.transform_values(&:to_s))
+      signed['passphrase'] = preferred_passphrase.to_s if preferred_passphrase.present?
+      string = signed.sort.reject { |k, _| k == 'signature' }.map { |k, v| "#{k}=#{CGI.escape(v.to_s)}" }.join('&')
+      headers.merge('signature' => Digest::MD5.hexdigest(string))
     end
 
     # Signature for the payment request: non-blank fields in documented order.

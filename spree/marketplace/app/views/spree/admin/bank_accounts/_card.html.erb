@@ -1,0 +1,33 @@
+<%# locals: owner, update_url, verify_url %>
+<% account = owner.bank_account %>
+<% money = ->(v) { Spree::Money.new(v, currency: owner.store.default_currency).to_s } %>
+<div class="card mb-6">
+  <div class="card-header flex justify-between items-center">
+    <h5 class="card-title"><%= Spree.t('marketplace.finance.balance_and_bank') %></h5>
+    <% if account&.verified? %><span class="badge badge-success"><%= Spree.t('marketplace.finance.verified') %></span><% elsif account %><span class="badge badge-warning"><%= Spree.t('marketplace.finance.unverified') %></span><% end %>
+  </div>
+  <div class="card-body">
+    <dl class="grid grid-cols-2 gap-2 mb-4">
+      <dt class="text-gray-600"><%= Spree.t('marketplace.finance.available') %></dt><dd class="text-right font-semibold"><%= money.(owner.available_balance) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.finance.pending') %></dt><dd class="text-right"><%= money.(owner.pending_balance) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.finance.paid_out') %></dt><dd class="text-right"><%= money.(-owner.ledger_entries.where(kind: 'payout').sum(:amount).to_d) %></dd>
+    </dl>
+    <% if account %>
+      <p class="text-sm mb-3"><%= account.account_holder %> · <%= account.bank_name %> · <%= account.branch_code %> · <%= account.masked_number %> (<%= account.account_type %>)</p>
+    <% end %>
+    <details <%= 'open' unless account %>>
+      <summary class="cursor-pointer text-sm font-medium mb-3"><%= account ? Spree.t('marketplace.finance.change_bank') : Spree.t('marketplace.finance.add_bank') %></summary>
+      <%= form_with model: account || Spree::BankAccount.new, scope: :bank_account, url: update_url, method: :put do |f| %>
+        <div class="form-group"><%= f.label :account_holder, class: 'form-label' %><%= f.text_field :account_holder, class: 'form-input', required: true %></div>
+        <div class="form-group"><%= f.label :bank_name, class: 'form-label' %><%= f.select :bank_name, Spree::BankAccount::BANKS.keys, { include_blank: true }, class: 'form-select', required: true, data: { branch_codes: Spree::BankAccount::BANKS.to_json } %></div>
+        <div class="form-group"><%= f.label :branch_code, class: 'form-label' %><%= f.text_field :branch_code, class: 'form-input', required: true, placeholder: '250655' %></div>
+        <div class="form-group"><%= f.label :account_number, class: 'form-label' %><%= f.text_field :account_number, value: '', class: 'form-input', required: account.nil?, placeholder: account ? account.masked_number : '', autocomplete: 'off' %></div>
+        <div class="form-group"><%= f.label :account_type, class: 'form-label' %><%= f.select :account_type, Spree::BankAccount::ACCOUNT_TYPES, {}, class: 'form-select' %></div>
+        <%= f.submit Spree.t('marketplace.finance.save_bank'), class: 'btn btn-light' %>
+      <% end %>
+    </details>
+    <% if account && !account.verified? %>
+      <%= button_to Spree.t('marketplace.finance.verify_bank'), verify_url, method: :put, class: 'btn btn-primary mt-3', data: { turbo_confirm: Spree.t('marketplace.finance.confirm_verify') } %>
+    <% end %>
+  </div>
+</div>

@@ -21,4 +21,8 @@ JWT live in httpOnly cookies. Products without photos get generated Ndebele-insp
 cp .env.example .env.local   # set SPREE_PUBLISHABLE_KEY
 pnpm dev                     # http://localhost:3001
 pnpm test && pnpm typecheck && pnpm build
+pnpm e2e                     # Playwright smoke tests; needs backend on :3000 and storefront on :3001
 ```
+
+CI: `.github/workflows/packages.yml` typechecks, unit-tests and builds the storefront.
+`.github/workflows/ecloudmall-e2e.yml` sets up the whole stack from scratch and runs the Playwright suite.

@@ -66,8 +66,16 @@ module Spree
         success_response('Canceled locally — refund in the provider dashboard if funds were received')
       end
 
-      def credit(_money, _source, _response_code, _options = {})
+      def credit(_money, *_args)
         Spree::PaymentResponse.new(false, "Refunds for #{name} must be issued from the provider dashboard", {}, test: test_mode?)
+      end
+
+      # Spree::Refund calls credit(cents, transaction_id, options) for gateways without payment
+      # profiles and credit(cents, source, transaction_id, options) for those with them.
+      def credit_arguments(args)
+        options = args.last.is_a?(Hash) ? args.last : {}
+        positional = args.last.is_a?(Hash) ? args[0...-1] : args
+        [positional.last, options]
       end
 
       def payment_session_class

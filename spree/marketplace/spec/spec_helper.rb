@@ -13,6 +13,7 @@ require 'ffaker'
 require 'webmock/rspec'
 
 require 'spree/testing_support/factories'
+require 'spree/testing_support/jobs'
 require 'spree/testing_support/store'
 require 'spree/api/testing_support/v3/base'
 require 'spree/api/testing_support/factories'

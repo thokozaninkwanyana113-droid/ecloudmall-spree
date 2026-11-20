@@ -1,0 +1,70 @@
+<% money = ->(v) { Spree::Money.new(v, currency: @batch.currency).to_s } %>
+<%= content_for :page_title do %>
+  <%= page_header_back_button(spree.admin_payout_batches_path) %>
+  <%= @batch.number %> <span class="badge badge-light"><%= @batch.status %></span>
+<% end %>
+
+<% content_for :page_actions do %>
+  <% if @batch.can_approve? %>
+    <%= button_to Spree.t('marketplace.finance.approve'), spree.approve_admin_payout_batch_path(@batch), method: :put, class: 'btn btn-primary', form: { class: 'inline' } %>
+  <% end %>
+  <% if @batch.can_export? %>
+    <%= link_to Spree.t('marketplace.finance.download_csv'), spree.export_admin_payout_batch_path(@batch), class: 'btn btn-light', data: { turbo: false } %>
+  <% end %>
+  <% if @batch.can_complete? %>
+    <%= button_to Spree.t('marketplace.finance.mark_paid'), spree.mark_paid_admin_payout_batch_path(@batch), method: :put, class: 'btn btn-primary', form: { class: 'inline' }, data: { turbo_confirm: Spree.t('marketplace.finance.confirm_paid') } %>
+  <% end %>
+  <% if @batch.can_cancel? %>
+    <%= button_to Spree.t('marketplace.finance.cancel'), spree.cancel_admin_payout_batch_path(@batch), method: :put, class: 'btn btn-light', form: { class: 'inline' } %>
+  <% end %>
+<% end %>
+
+<p class="mb-4 text-gray-600"><%= Spree.t('marketplace.finance.batch_help') %></p>
+
+<div class="card mb-6">
+  <div class="card-header flex justify-between">
+    <h5 class="card-title"><%= Spree.t('marketplace.finance.payouts') %> (<%= @batch.payouts_count.to_i %>)</h5>
+    <span class="font-semibold"><%= money.(@batch.total.to_d) %></span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th><%= Spree.t('marketplace.finance.payee') %></th><th><%= Spree.t('marketplace.finance.reference') %></th><th><%= Spree.t('marketplace.finance.bank') %></th><th class="text-right"><%= Spree.t('marketplace.finance.total') %></th><th><%= Spree.t(:status) %></th><th></th></tr></thead>
+      <tbody>
+        <% @payouts.each do |payout| %>
+          <tr>
+            <td><%= payout.payee&.name %> <span class="text-gray-600 text-sm">(<%= payout.payee.class.model_name.human %>)</span></td>
+            <td class="font-mono text-sm"><%= payout.reference %></td>
+            <td class="text-sm"><%= payout.bank_name %> · <%= payout.bank_branch_code %> · •••• <%= payout.bank_account_last4 %></td>
+            <td class="text-right"><%= money.(payout.amount) %></td>
+            <td><span class="badge <%= { 'paid' => 'badge-success', 'failed' => 'badge-danger' }[payout.status] || 'badge-light' %>"><%= payout.status %></span><% if payout.failure_reason %><br><span class="text-sm text-gray-600"><%= payout.failure_reason %></span><% end %></td>
+            <td class="text-right">
+              <% if %w[pending paid].include?(payout.status) && !@batch.draft? %>
+                <%= form_with url: spree.mark_failed_admin_payout_path(payout), method: :put, class: 'flex gap-2 justify-end' do %>
+                  <%= text_field_tag :failure_reason, nil, placeholder: Spree.t('marketplace.finance.failure_reason'), class: 'form-input text-sm' %>
+                  <%= submit_tag Spree.t('marketplace.finance.mark_failed'), class: 'btn btn-light btn-sm' %>
+                <% end %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @payouts.empty? %><tr><td colspan="6" class="text-gray-600"><%= Spree.t('marketplace.finance.no_payouts') %></td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if @blocked.any? %>
+  <div class="card">
+    <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.finance.blocked') %></h5></div>
+    <div class="card-body">
+      <ul class="flex flex-col gap-2">
+        <% @blocked.each do |payee| %>
+          <li class="flex justify-between">
+            <%= link_to payee.name, payee.is_a?(Spree::Seller) ? spree.edit_admin_seller_path(payee) : spree.edit_admin_partner_path(payee) %>
+            <span><%= money.(payee.available_balance) %> · <span class="badge badge-warning"><%= Spree.t('marketplace.finance.needs_bank') %></span></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>

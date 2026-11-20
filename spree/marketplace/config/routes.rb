@@ -11,8 +11,30 @@ Spree::Core::Engine.add_routes do
   end
 
   namespace :admin do
-    resources :partners
+    resources :partners do
+      member { put :close_month }
+      resource :bank_account, only: [:update] do
+        put :verify
+      end
+    end
+    resource :finance, only: [:show], controller: 'finance' do
+      post :sync
+    end
+    resources :payout_batches, only: [:index, :show, :create] do
+      member do
+        put :approve
+        put :cancel
+        put :mark_paid
+        get :export
+      end
+    end
+    resources :payouts, only: [] do
+      member { put :mark_failed }
+    end
     resources :sellers do
+      resource :bank_account, only: [:update] do
+        put :verify
+      end
       member do
         put :approve
         put :reject

@@ -1,0 +1,25 @@
+<%= content_for :page_title do %>
+  <%= Spree.t('marketplace.finance.payout_runs') %>
+<% end %>
+<% content_for :page_actions do %>
+  <%= link_to Spree.t('marketplace.finance.title'), spree.admin_finance_path, class: 'btn btn-light' %>
+  <%= button_to Spree.t('marketplace.finance.new_batch'), spree.admin_payout_batches_path, method: :post, class: 'btn btn-primary', form: { class: 'inline' } %>
+<% end %>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th><%= Spree.t('marketplace.finance.run') %></th><th><%= Spree.t(:status) %></th><th class="text-right"><%= Spree.t('marketplace.finance.payouts') %></th><th class="text-right"><%= Spree.t('marketplace.finance.total') %></th><th><%= Spree.t('marketplace.finance.created') %></th></tr></thead>
+      <tbody>
+        <% @batches.each do |batch| %>
+          <tr>
+            <td><%= link_to batch.number, spree.admin_payout_batch_path(batch) %></td>
+            <td><span class="badge badge-light"><%= batch.status %></span></td>
+            <td class="text-right"><%= batch.payouts_count.to_i %></td>
+            <td class="text-right"><%= Spree::Money.new(batch.total.to_d, currency: batch.currency) %></td>
+            <td><%= l(batch.created_at, format: :short) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
