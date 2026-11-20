@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "packages/**"
+      - "apps/**"
+      - "pnpm-workspace.yaml"
       - "spree/api/app/**"
       - "spree/core/app/**"
       - "docs/developer/**"
@@ -16,6 +18,8 @@ on:
   pull_request:
     paths:
       - "packages/**"
+      - "apps/**"
+      - "pnpm-workspace.yaml"
       - "spree/api/app/**"
       - "spree/core/app/**"
       - "docs/developer/**"

@@ -1,0 +1,91 @@
+<% money = ->(v) { Spree::Money.new(v, currency: @currency).to_s } %>
+<%= content_for :page_title do %>
+  <%= Spree.t('marketplace.finance.title') %>
+<% end %>
+
+<% content_for :page_actions do %>
+  <%= button_to Spree.t('marketplace.finance.sync'), spree.sync_admin_finance_path, method: :post, class: 'btn btn-light', form: { class: 'inline' } %>
+  <%= button_to Spree.t('marketplace.finance.new_batch'), spree.admin_payout_batches_path, method: :post, class: 'btn btn-primary', form: { class: 'inline' } %>
+<% end %>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+  <div class="card"><div class="card-body">
+    <p class="text-gray-600"><%= Spree.t('marketplace.finance.available_total') %></p>
+    <p class="text-2xl font-semibold"><%= money.(@payees.sum { |r| r[:available] }) %></p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <p class="text-gray-600"><%= Spree.t('marketplace.finance.pending_total', days: Spree::Marketplace::Ledger.hold_days) %></p>
+    <p class="text-2xl font-semibold"><%= money.(@payees.sum { |r| r[:pending] }) %></p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <p class="text-gray-600"><%= Spree.t('marketplace.finance.blocked_total') %></p>
+    <p class="text-2xl font-semibold"><%= money.(@payees.reject { |r| r[:ready] }.sum { |r| r[:payable] }) %></p>
+  </div></div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.finance.balances') %></h5></div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr>
+        <th><%= Spree.t('marketplace.finance.payee') %></th>
+        <th><%= Spree.t('marketplace.finance.type') %></th>
+        <th class="text-right"><%= Spree.t('marketplace.finance.available') %></th>
+        <th class="text-right"><%= Spree.t('marketplace.finance.pending') %></th>
+        <th class="text-right"><%= Spree.t('marketplace.finance.payable') %></th>
+        <th><%= Spree.t('marketplace.finance.bank') %></th>
+      </tr></thead>
+      <tbody>
+        <% @payees.each do |row| %>
+          <% payee = row[:payee] %>
+          <tr>
+            <td><%= link_to payee.name, payee.is_a?(Spree::Seller) ? spree.edit_admin_seller_path(payee) : spree.edit_admin_partner_path(payee) %></td>
+            <td><%= payee.class.model_name.human %></td>
+            <td class="text-right"><%= money.(row[:available]) %></td>
+            <td class="text-right text-gray-600"><%= money.(row[:pending]) %></td>
+            <td class="text-right font-medium"><%= money.(row[:payable]) %></td>
+            <td><% if row[:ready] %><span class="badge badge-success"><%= Spree.t('marketplace.finance.verified') %></span><% else %><span class="badge badge-warning"><%= Spree.t('marketplace.finance.needs_bank') %></span><% end %></td>
+          </tr>
+        <% end %>
+        <% if @payees.empty? %><tr><td colspan="6" class="text-gray-600"><%= Spree.t('marketplace.finance.nothing_owed') %></td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="card">
+    <div class="card-header flex justify-between"><h5 class="card-title"><%= Spree.t('marketplace.finance.payout_runs') %></h5><%= link_to Spree.t('marketplace.finance.all_runs'), spree.admin_payout_batches_path %></div>
+    <div class="table-responsive">
+      <table class="table">
+        <tbody>
+          <% @batches.each do |batch| %>
+            <tr>
+              <td><%= link_to batch.number, spree.admin_payout_batch_path(batch) %></td>
+              <td><span class="badge badge-light"><%= batch.status %></span></td>
+              <td class="text-right"><%= money.(batch.total.to_d) %></td>
+              <td class="text-right text-gray-600"><%= batch.payouts_count.to_i %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.finance.recent_entries') %></h5></div>
+    <div class="table-responsive">
+      <table class="table">
+        <tbody>
+          <% @recent_entries.each do |e| %>
+            <tr>
+              <td class="text-gray-600 whitespace-nowrap"><%= l(e.created_at.to_date, format: :short) %></td>
+              <td><%= e.payee&.name %></td>
+              <td><span class="badge badge-light"><%= e.kind %></span></td>
+              <td class="text-right <%= e.amount.negative? ? 'text-red-600' : '' %>"><%= Spree::Money.new(e.amount, currency: e.currency) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.business') %></h5></div>
+  <div class="card-body">
+    <%= f.spree_text_field :name, required: true, autofocus: f.object.new_record? %>
+    <%= f.spree_text_field :slug unless f.object.new_record? %>
+    <%= f.spree_text_field :tagline %>
+    <%= f.spree_text_area :description, rows: 4 %>
+    <%= f.spree_text_field :story_headline %>
+    <%= f.spree_text_area :story, rows: 4 %>
+    <div class="grid grid-cols-2 gap-4">
+      <%= f.spree_text_field :primary_category %>
+      <%= f.spree_select :business_type, @business_types, { include_blank: true } %>
+      <%= f.spree_select :size_band, @size_bands, { include_blank: true } %>
+      <%= f.spree_text_field :registration_number, label: Spree.t('marketplace.admin.cipc_number') %>
+      <%= f.spree_text_field :vat_number %>
+      <%= f.spree_number_field :bbbee_level, min: 1, max: 8, label: Spree.t('marketplace.admin.bbbee_level') %>
+      <%= f.spree_number_field :founded_year %>
+      <%= f.spree_number_field :team_size %>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.ownership') %></h5></div>
+  <div class="card-body grid grid-cols-2 gap-2">
+    <%= f.spree_check_box :black_owned %>
+    <%= f.spree_check_box :women_owned %>
+    <%= f.spree_check_box :youth_owned %>
+    <%= f.spree_check_box :disability_owned %>
+    <%= f.spree_check_box :township_business %>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.contact_and_location') %></h5></div>
+  <div class="card-body grid grid-cols-2 gap-4">
+    <%= f.spree_text_field :contact_name %>
+    <%= f.spree_email_field :email, required: true %>
+    <%= f.spree_text_field :phone %>
+    <%= f.spree_text_field :whatsapp %>
+    <%= f.spree_text_field :website %>
+    <%= f.spree_text_field :instagram %>
+    <%= f.spree_text_field :facebook %>
+    <%= f.spree_text_field :tiktok %>
+    <%= f.spree_select :province, @provinces, { include_blank: true } %>
+    <%= f.spree_text_field :city %>
+    <%= f.spree_text_field :township %>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header"><h5 class="card-title"><%= Spree.t('marketplace.admin.marketplace_settings') %></h5></div>
+  <div class="card-body">
+    <div class="grid grid-cols-2 gap-4">
+      <%= f.spree_number_field :commission_rate, step: 0.25, label: Spree.t('marketplace.admin.commission_rate') %>
+      <%= f.spree_number_field :dispatch_days %>
+      <%= f.spree_text_field :brand_color, placeholder: '#FF5A1F' %>
+      <%= f.spree_select :referred_by_partner_id, current_store.partners.order(:name).pluck(:name, :id), { include_blank: true, label: Spree.t('marketplace.admin.referred_by_partner') } %>
+      <%= f.spree_datetime_field :referral_expires_at %>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <%= f.spree_check_box :featured %>
+      <%= f.spree_check_box :verified %>
+      <%= f.spree_check_box :ships_nationwide %>
+      <%= f.spree_check_box :offers_collection %>
+    </div>
+    <%= f.spree_file_field :logo %>
+    <%= f.spree_file_field :banner %>
+    <%= f.spree_text_area :admin_notes, rows: 3 %>
+  </div>
+</div>

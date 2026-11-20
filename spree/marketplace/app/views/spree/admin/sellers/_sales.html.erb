@@ -1,0 +1,22 @@
+<% summary = seller.sales_summary %>
+<div class="card mb-6">
+  <div class="card-header">
+    <h5 class="card-title"><%= Spree.t('marketplace.admin.sales_and_payouts') %></h5>
+  </div>
+  <div class="card-body">
+    <dl class="grid grid-cols-2 gap-3">
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.orders') %></dt>
+      <dd class="text-right font-medium"><%= summary[:orders_count] %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.units_sold') %></dt>
+      <dd class="text-right font-medium"><%= summary[:units_sold] %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.gross_sales') %></dt>
+      <dd class="text-right font-medium"><%= Spree::Money.new(summary[:gross], currency: summary[:currency]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.awaiting_payment') %></dt>
+      <dd class="text-right font-medium"><%= Spree::Money.new(summary[:awaiting_payment], currency: summary[:currency]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.commission', rate: seller.effective_commission_rate.to_s('F')) %></dt>
+      <dd class="text-right font-medium"><%= Spree::Money.new(summary[:commission], currency: summary[:currency]) %></dd>
+      <dt class="text-gray-600"><%= Spree.t('marketplace.admin.payout_due') %></dt>
+      <dd class="text-right font-semibold"><%= Spree::Money.new(summary[:payout], currency: summary[:currency]) %></dd>
+    </dl>
+  </div>
+</div>

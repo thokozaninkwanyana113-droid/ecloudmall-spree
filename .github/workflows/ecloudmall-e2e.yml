@@ -1,0 +1,136 @@
+name: EcloudMall E2E
+
+# Full-stack smoke test: Spree backend + marketplace engine (set up from scratch with
+# scripts/setup-ecloudmall.sh) + the Next.js storefront, driven by Playwright.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "spree/**"
+      - "apps/**"
+      - "packages/**"
+      - "scripts/setup-ecloudmall.sh"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ecloudmall-e2e.yml"
+  pull_request:
+    paths:
+      - "spree/**"
+      - "apps/**"
+      - "packages/**"
+      - "scripts/setup-ecloudmall.sh"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ecloudmall-e2e.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: "Storefront + admin smoke tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: localhost
+      BUNDLE_JOBS: 4
+      BUNDLE_RETRY: 3
+      ECLOUDMALL_PAYOUT_HOLD_DAYS: 0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install system packages
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev libpq-dev
+
+      - name: Cache server gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/server-bundle
+          key: server-gems-${{ runner.os }}-ruby3.3-${{ hashFiles('spree/**/*.gemspec', 'scripts/setup-ecloudmall.sh') }}
+          restore-keys: server-gems-${{ runner.os }}-ruby3.3-
+
+      - name: Set up backend, demo data and storefront config
+        env:
+          BUNDLE_PATH: ${{ github.workspace }}/vendor/server-bundle
+        run: ./scripts/setup-ecloudmall.sh
+
+      - name: Make the Paxi partner live for referral tests
+        working-directory: server
+        env:
+          BUNDLE_PATH: ${{ github.workspace }}/vendor/server-bundle
+        run: |
+          bin/rails runner 'Spree::Partner.find_by!(code: "PAXI").update!(status: "pilot")'
+
+      - name: Start backend (web + worker)
+        working-directory: server
+        env:
+          BUNDLE_PATH: ${{ github.workspace }}/vendor/server-bundle
+        run: |
+          nohup bin/rails server -p 3000 -b 127.0.0.1 > ${{ github.workspace }}/rails.log 2>&1 &
+          nohup bundle exec sidekiq > ${{ github.workspace }}/sidekiq.log 2>&1 &
+          for i in $(seq 1 60); do curl -fs -o /dev/null http://127.0.0.1:3000/up && break || sleep 2; done
+          curl -fs -o /dev/null http://127.0.0.1:3000/up
+
+      - name: Build and start storefront
+        run: |
+          pnpm --filter @spree/sdk-core build
+          pnpm --filter @spree/sdk build
+          pnpm --filter @ecloudmall/storefront build
+          cd apps/storefront
+          nohup pnpm start > ${{ github.workspace }}/storefront.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs -o /dev/null http://localhost:3001/ && break || sleep 2; done
+          curl -fs -o /dev/null http://localhost:3001/
+
+      - name: Install Playwright browser
+        working-directory: apps/storefront
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: apps/storefront
+        run: pnpm e2e
+
+      - name: Upload Playwright report and logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecloudmall-e2e-artifacts
+          path: |
+            apps/storefront/playwright-report/
+            apps/storefront/test-results/
+            rails.log
+            sidekiq.log
+            storefront.log
+          if-no-files-found: ignore

@@ -34,10 +34,12 @@ RSpec.describe Spree::Api::V3::Store::ProductsController, type: :controller do
           expect(response.headers['Cache-Control']).to include('no-store')
         end
 
-        it 'does not set Vary header' do
+        it 'does not set the CDN Vary header' do
           get :index
 
-          expect(response.headers['Vary']).to be_nil
+          # Rails itself may add `Vary: Accept` for content negotiation; Spree's CDN keys must not be added
+          expect(response.headers['Vary'].to_s).not_to include('x-spree-currency')
+          expect(response.headers['Vary'].to_s).not_to include('x-spree-locale')
         end
       end
     end

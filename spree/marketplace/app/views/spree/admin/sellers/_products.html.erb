@@ -1,0 +1,15 @@
+<div class="card mb-6">
+  <div class="card-header">
+    <h5 class="card-title"><%= Spree.t(:products) %> (<%= seller.products.count %>)</h5>
+  </div>
+  <div class="card-body">
+    <ul class="flex flex-col gap-2">
+      <% seller.products.order(updated_at: :desc).limit(10).each do |product| %>
+        <li class="flex justify-between">
+          <%= link_to product.name, spree.edit_admin_product_path(product) %>
+          <span class="badge badge-light"><%= product.status %></span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>

@@ -52,7 +52,7 @@ jobs:
 
       - name: Install all project dependencies
         run: |
-          for project in core api admin emails; do
+          for project in core api admin emails marketplace; do
             echo "--- Installing gems for $project ---"
             cd spree/$project
             bundle config set --local path ${{ github.workspace }}/vendor/bundle
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DB: mysql
-      RAILS_VERSION: "7.2.0"
+      RAILS_VERSION: "~> 7.2.0"
       BUNDLE_JOBS: 4
       BUNDLE_RETRY: 3
     steps:
@@ -91,7 +91,7 @@ jobs:
 
       - name: Install all project dependencies
         run: |
-          for project in core api admin emails; do
+          for project in core api admin emails marketplace; do
             echo "--- Installing gems for $project ---"
             cd spree/$project
             bundle config set --local path ${{ github.workspace }}/vendor/bundle
@@ -122,6 +122,8 @@ jobs:
           - { project: admin, shard: 2, total_shards: 2 }
           # emails: 1 shard
           - { project: emails, shard: 1, total_shards: 1 }
+          # EcloudMall marketplace engine (sellers, payments, partners, ledger): 1 shard
+          - { project: marketplace, shard: 1, total_shards: 1 }
     services:
       postgres:
         image: postgres:16
@@ -271,6 +273,8 @@ jobs:
           - { project: admin, shard: 2, total_shards: 2 }
           # emails: 1 shard
           - { project: emails, shard: 1, total_shards: 1 }
+          # EcloudMall marketplace engine (sellers, payments, partners, ledger): 1 shard
+          - { project: marketplace, shard: 1, total_shards: 1 }
     services:
       mysql:
         image: mysql:8.0
@@ -288,7 +292,7 @@ jobs:
       DB_HOST: 127.0.0.1
       DB_USERNAME: root
       DB_PASSWORD: password
-      RAILS_VERSION: "7.2.0"
+      RAILS_VERSION: "~> 7.2.0"
       CI_ARTIFACTS: /tmp/test-artifacts
       BUNDLE_JOBS: 4
       BUNDLE_RETRY: 3
@@ -405,7 +409,7 @@ jobs:
       - name: Run Brakeman
         working-directory: spree
         run: |
-          for project in core api admin; do
+          for project in core api admin marketplace; do
             echo "--- Running Brakeman on $project ---"
             bundle exec brakeman --ensure-latest -p $project
           done

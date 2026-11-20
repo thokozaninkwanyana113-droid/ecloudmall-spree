@@ -1,3 +1,46 @@
+# EcloudMall 🇿🇦
+
+**The marketplace for South African SMMEs** — township makers, Black-, women- and youth-owned brands and local
+businesses from all nine provinces, built on [Spree Commerce](https://spreecommerce.org).
+
+| Piece | Where |
+|---|---|
+| Marketplace engine (sellers, applications, commission & payouts, SA setup) | [`spree/marketplace`](spree/marketplace) |
+| Storefront (Next.js) | [`apps/storefront`](apps/storefront) |
+| Design & decisions | [`docs/plans/ecloudmall-marketplace.md`](docs/plans/ecloudmall-marketplace.md), [`docs/plans/ecloudmall-payments-and-logistics-partners.md`](docs/plans/ecloudmall-payments-and-logistics-partners.md) |
+| Paxi / Pargo partnership proposal | [`docs/partnerships/paxi-pargo-partnership.md`](docs/partnerships/paxi-pargo-partnership.md) |
+
+**Payments:** PayFast, Ozow, Yoco, manual EFT and pay on delivery. **Delivery:** courier, express, and
+collection at Paxi / Pargo pickup points. **Money out:** ledger, refunds with seller clawback, and payout runs
+to sellers and partners (Admin → Finance) — see [`docs/plans/ecloudmall-funds-flow.md`](docs/plans/ecloudmall-funds-flow.md).
+
+**CI:** `tests.yml` runs the marketplace engine specs (PostgreSQL + MySQL) and Brakeman alongside Spree's;
+`packages.yml` typechecks, tests and builds the storefront; `ecloudmall-e2e.yml` boots the full stack and runs
+Playwright smoke tests.
+
+### Run it locally
+
+Requires Ruby 3.3+, Node 22+, pnpm, PostgreSQL and Redis.
+
+```bash
+./scripts/setup-ecloudmall.sh
+```
+
+Then start the backend (web + background worker, which processes payment webhooks) and the storefront:
+
+```bash
+cd server && bin/dev
+```
+
+```bash
+pnpm --filter @ecloudmall/storefront dev
+```
+
+- Storefront: http://localhost:3001
+- Admin: http://localhost:3000/admin (`spree@example.com` / `spree123`) → **Sellers** to approve applications
+
+---
+
 <p align="center">
   <h1 align="center">
   <a href="https://spreecommerce.org">

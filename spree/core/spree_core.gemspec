@@ -50,8 +50,10 @@ Gem::Specification.new do |s|
   s.add_dependency 'ransack', '>= 4.1'
   s.add_dependency 'rexml'
 
-  s.add_dependency 'state_machines-activerecord', '~> 0.100'
-  s.add_dependency 'state_machines-activemodel', '~> 0.100'
+  # 0.300+ (Ruby 4 only) changes event return values and state-change logging, and breaks on Rails 7.2
+  s.add_dependency 'state_machines', '>= 0.100', '< 0.300'
+  s.add_dependency 'state_machines-activerecord', '>= 0.100', '< 0.300'
+  s.add_dependency 'state_machines-activemodel', '>= 0.100', '< 0.300'
   s.add_dependency 'stringex'
   s.add_dependency 'tracking_number'
   s.add_dependency 'validates_zipcode'

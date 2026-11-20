@@ -19,3 +19,6 @@ ot
 ro
 nam
 sur
+zar
+sme
+fulfilment

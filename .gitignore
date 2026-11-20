@@ -59,3 +59,4 @@ packages/*/package-lock.json
 .turbo
 packages/*/dist
 .claude/worktrees
+dump.rdb

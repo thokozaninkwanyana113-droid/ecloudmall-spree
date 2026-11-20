@@ -5,6 +5,8 @@ source 'https://rubygems.org'
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
 gem 'rails', ENV.fetch('RAILS_VERSION', '~> 8.1.0'), require: false
+# Rails 7.2 passes quirks_mode to JSON, which json 3.x removed
+gem 'json', '< 3' if ENV.fetch('RAILS_VERSION', '').include?('7.2')
 
 platforms :jruby do
   gem 'jruby-openssl'
