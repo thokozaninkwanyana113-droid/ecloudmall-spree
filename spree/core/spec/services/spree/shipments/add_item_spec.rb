@@ -21,7 +21,8 @@ module Spree
     end
 
     let(:shipment) { create(:shipment, order: order) }
-    let(:line_item) { shipment.line_items.last }
+    # newest line item by id (association order isn't guaranteed, so .last was flaky)
+    let(:line_item) { order.reload.line_items.max_by(&:id) }
 
     context 'valid attributes' do
       shared_context 'creates a line item' do
