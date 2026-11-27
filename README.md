@@ -29,7 +29,7 @@ Requires Ruby 3.3+, Node 22+, pnpm, PostgreSQL and Redis.
 Then start the backend (web + background worker, which processes payment webhooks) and the storefront:
 
 ```bash
-cd server && bin/dev
+cd apps/backend && bin/dev
 ```
 
 ```bash
@@ -38,6 +38,15 @@ pnpm --filter @ecloudmall/storefront dev
 
 - Storefront: http://localhost:3001
 - Admin: http://localhost:3000/admin (`spree@example.com` / `spree123`) → **Sellers** to approve applications
+
+### Deploy to production (Render)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/thokozaninkwanyana113-droid/ecloudmall-spree)
+
+`render.yaml` creates the API/admin, Sidekiq worker, ledger and partner cron jobs, storefront, Postgres and
+Redis in Frankfurt. When prompted, set `ADMIN_EMAIL` / `ADMIN_PASSWORD` (payment, SMTP and R2 storage
+settings can be added later). After the first API deploy, copy the publishable key it prints into the
+storefront's `SPREE_PUBLISHABLE_KEY`. Details: [`docs/plans/ecloudmall-production-deployment.md`](docs/plans/ecloudmall-production-deployment.md).
 
 ---
 

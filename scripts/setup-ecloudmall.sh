@@ -1,43 +1,21 @@
 #!/usr/bin/env bash
-# Sets up a local EcloudMall backend (Spree + marketplace engine) and storefront.
+# Sets up EcloudMall for local development: the backend in apps/backend (Spree + marketplace engine)
+# and the Next.js storefront, with demo sellers.
 #
 #   ./scripts/setup-ecloudmall.sh
 #
 # Requirements: Ruby 3.3+, Node 22+, pnpm, PostgreSQL and Redis running locally.
-# Env overrides: DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST
+# Env overrides: DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST (or DATABASE_URL)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-STARTER_TAG="${STARTER_TAG:-v5.4.0.rc5}" # spree-starter release matching this repo's Spree version
-cd "$ROOT"
-
-if [ ! -d server ]; then
-  echo "▸ Cloning spree-starter ${STARTER_TAG} into server/"
-  git clone -q --depth 1 --branch "$STARTER_TAG" https://github.com/spree/spree-starter.git server
-  rm -rf server/.git server/.gitignore
-fi
-
-cd server
-echo "SPREE_PATH=.." > .env
-ruby -e 'print RUBY_VERSION' > .ruby-version
-
-# Use the local marketplace engine; drop optional gems that don't match this Spree version.
-grep -q spree_marketplace Gemfile || sed -i.bak "/gem 'spree_admin', path:/a\\
-  gem 'spree_marketplace', path: \"#{spree_path}/spree/marketplace\"
-" Gemfile
-sed -i.bak "/^gem 'spree_stripe'/d; /^gem 'spree_i18n'$/d" Gemfile
-grep -q 'password:' config/database.yml || sed -i.bak 's/^\(  username: .*\)$/\1\n  password: <%= ENV.fetch("DATABASE_PASSWORD") { "" } %>/' config/database.yml
-rm -f Gemfile.bak config/database.yml.bak
+cd "$ROOT/apps/backend"
 
 echo "▸ Installing gems"
 bundle install
 
 echo "▸ Preparing database"
-bin/rails db:create
-bin/rails spree:install:migrations
-bin/rails spree_marketplace:install:migrations
-bin/rails db:migrate
-bin/rails db:seed
+bin/rails db:prepare
 
 echo "▸ Building admin CSS"
 bin/rails spree:admin:tailwindcss:build
@@ -61,6 +39,6 @@ cat <<MSG
 
 ✔ EcloudMall is ready.
 
-  Backend + admin:  cd server && bin/dev   (web + worker) → http://localhost:3000/admin  (spree@example.com / spree123)
-  Storefront:       pnpm --filter @ecloudmall/storefront dev → http://localhost:3001
+  Backend + admin:  cd apps/backend && bin/dev   (web + worker) → http://localhost:3000/admin  (spree@example.com / spree123)
+  Storefront:       pnpm --filter @ecloudmall/storefront dev     → http://localhost:3001
 MSG

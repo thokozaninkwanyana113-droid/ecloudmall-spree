@@ -34,3 +34,39 @@ namespace :ecloudmall do
     end
   end
 end
+
+namespace :ecloudmall do
+  desc 'Production-safe first-run setup: store, payments and partners from ENV; never loads demo data unless ECLOUDMALL_DEMO_DATA=true'
+  task bootstrap: :environment do
+    if Rails.env.production?
+      default_admin = Spree.admin_user_class.find_by(email: 'spree@example.com')
+      if default_admin&.valid_password?('spree123')
+        abort '✘ The default admin login (spree@example.com / spree123) exists. Set ADMIN_EMAIL and ADMIN_PASSWORD ' \
+              'before the first deploy, or change that admin\'s password, then run bootstrap again.'
+      end
+    end
+
+    setup = Spree::Marketplace::Setup.new
+    setup.configure_store
+    setup.load_demo_vendors if ENV['ECLOUDMALL_DEMO_DATA'] == 'true'
+
+    store = Spree::Store.default
+    key = Spree::ApiKey.where(store: store).publishable.first || Spree::ApiKey.create!(store: store, key_type: 'publishable', name: 'Storefront')
+    active = store.payment_methods.active.order(:position).pluck(:name)
+    puts "✔ Store URL: #{store.url.presence || '(set ECLOUDMALL_STORE_URL)'} · storefront origins: #{store.allowed_origins.pluck(:origin).join(', ')}"
+    puts "✔ Active payment methods: #{active.join(' | ')}"
+    puts "✔ Storefront publishable key (set SPREE_PUBLISHABLE_KEY on the storefront): #{key.token}"
+  end
+end
+
+namespace :ecloudmall do
+  desc 'Run ecloudmall:bootstrap only if the store has not been set up yet (used by the Docker entrypoint)'
+  task bootstrap_once: :environment do
+    store = Spree::Store.default
+    if store&.default_currency == 'ZAR' && store.markets.exists?(name: 'South Africa') && ENV['ECLOUDMALL_FORCE_BOOTSTRAP'] != 'true'
+      puts '✔ EcloudMall already bootstrapped — skipping (set ECLOUDMALL_FORCE_BOOTSTRAP=true to re-apply ENV settings)'
+    else
+      Rake::Task['ecloudmall:bootstrap'].invoke
+    end
+  end
+end
