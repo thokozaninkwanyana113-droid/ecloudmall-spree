@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+# Web process only: migrate (and seed a fresh database), then run EcloudMall's first-run bootstrap once.
+# Workers and cron jobs skip this so they never race the web service on deploy.
+if [[ "$*" == *"./bin/rails server"* ]]; then
+  ./bin/rails db:prepare
+  ./bin/rails ecloudmall:bootstrap_once
+fi
+
+exec "${@}"

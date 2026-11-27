@@ -1,7 +1,9 @@
 import 'server-only';
 import { createClient, type Product } from '@spree/sdk';
 
-export const SPREE_API_URL = process.env.SPREE_API_URL ?? 'http://localhost:3000';
+// Render's private-network reference is a bare host:port, so add a scheme when it's missing
+const rawApiUrl = process.env.SPREE_API_URL ?? 'http://localhost:3000';
+export const SPREE_API_URL = /^https?:\/\//.test(rawApiUrl) ? rawApiUrl : `http://${rawApiUrl}`;
 export const SPREE_PUBLISHABLE_KEY = process.env.SPREE_PUBLISHABLE_KEY ?? '';
 
 export const spree = createClient({

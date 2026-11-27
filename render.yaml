@@ -1,0 +1,221 @@
+# EcloudMall on Render — apply with "New → Blueprint" (or the Deploy to Render link in README).
+# Everything runs in Frankfurt (closest Render region to South Africa).
+#
+# Values marked `sync: false` are asked for when the Blueprint is created (they can be left blank and
+# filled in later under Environment). Secrets marked `generateValue` are created by Render.
+
+envVarGroups:
+  - name: ecloudmall-backend
+    envVars:
+      # --- generated secrets (never change these after launch: they decrypt stored bank details)
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+        generateValue: true
+      - key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+        generateValue: true
+      - key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+        generateValue: true
+      # --- first admin login (used once, when the database is created)
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # --- public URLs (change to your custom domains when you add them)
+      - key: ECLOUDMALL_STORE_URL
+        value: https://ecloudmall-api.onrender.com
+      - key: RAILS_HOST
+        value: ecloudmall-api.onrender.com
+      - key: ECLOUDMALL_STOREFRONT_URL
+        value: https://ecloudmall-storefront.onrender.com
+      # --- payments: PayFast goes live only once real merchant credentials are set
+      - key: PAYFAST_MERCHANT_ID
+        sync: false
+      - key: PAYFAST_MERCHANT_KEY
+        sync: false
+      - key: PAYFAST_PASSPHRASE
+        sync: false
+      - key: OZOW_SITE_CODE
+        sync: false
+      - key: OZOW_PRIVATE_KEY
+        sync: false
+      - key: OZOW_API_KEY
+        sync: false
+      - key: YOCO_SECRET_KEY
+        sync: false
+      - key: YOCO_WEBHOOK_SECRET
+        sync: false
+      # --- transactional email (order confirmations)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_ADDRESS
+        value: hello@ecloudmall.co.za
+      # --- file uploads (seller logos, product photos). Without these, uploads live on the
+      #     container disk and are lost on every deploy. Cloudflare R2 or AWS S3:
+      - key: CLOUDFLARE_ENDPOINT
+        sync: false
+      - key: CLOUDFLARE_ACCESS_KEY_ID
+        sync: false
+      - key: CLOUDFLARE_SECRET_ACCESS_KEY
+        sync: false
+      - key: CLOUDFLARE_BUCKET
+        sync: false
+      # --- marketplace
+      - key: ECLOUDMALL_PAYOUT_HOLD_DAYS
+        value: "7"
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: RAILS_MAX_THREADS
+        value: "5"
+
+services:
+  # Rails API + admin (Spree, marketplace engine)
+  - type: web
+    name: ecloudmall-api
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/backend/**
+        - spree/**
+    envVars:
+      - fromGroup: ecloudmall-backend
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecloudmall-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ecloudmall-redis
+          type: keyvalue
+          property: connectionString
+
+  # Background jobs: payment webhooks, ledger events, emails
+  - type: worker
+    name: ecloudmall-worker
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: bundle exec sidekiq
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/backend/**
+        - spree/**
+    envVars:
+      - fromGroup: ecloudmall-backend
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecloudmall-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ecloudmall-redis
+          type: keyvalue
+          property: connectionString
+
+  # Nightly safety-net sync of the seller/partner ledger (01:00 UTC = 03:00 SAST)
+  - type: cron
+    name: ecloudmall-ledger-sync
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    schedule: "0 1 * * *"
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: ./bin/rails ecloudmall:ledger:sync
+    envVars:
+      - fromGroup: ecloudmall-backend
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecloudmall-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ecloudmall-redis
+          type: keyvalue
+          property: connectionString
+
+  # Accrue last month's partner (Paxi/Pargo) payouts on the 1st (02:15 UTC)
+  - type: cron
+    name: ecloudmall-close-partner-month
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    schedule: "15 2 1 * *"
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: .
+    dockerCommand: ./bin/rails ecloudmall:close_partner_month
+    envVars:
+      - fromGroup: ecloudmall-backend
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecloudmall-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ecloudmall-redis
+          type: keyvalue
+          property: connectionString
+
+  # Next.js storefront
+  - type: web
+    name: ecloudmall-storefront
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @spree/sdk-core build &&
+      pnpm --filter @spree/sdk build &&
+      pnpm --filter @ecloudmall/storefront build
+    startCommand: pnpm --filter @ecloudmall/storefront start
+    healthCheckPath: /
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/storefront/**
+        - packages/sdk/**
+        - packages/sdk-core/**
+        - pnpm-lock.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Server-side calls go over Render's private network
+      - key: SPREE_API_URL
+        fromService:
+          name: ecloudmall-api
+          type: web
+          property: hostport
+      # Printed by the API's first boot (ecloudmall:bootstrap) — set it after the first deploy
+      - key: SPREE_PUBLISHABLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://ecloudmall-storefront.onrender.com
+
+  - type: keyvalue
+    name: ecloudmall-redis
+    region: frankfurt
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: ecloudmall-db
+    region: frankfurt
+    plan: basic-1gb
+    databaseName: ecloudmall
+    postgresMajorVersion: "16"
+    ipAllowList: []

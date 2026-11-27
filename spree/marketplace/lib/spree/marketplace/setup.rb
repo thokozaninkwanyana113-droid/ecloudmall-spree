@@ -13,13 +13,14 @@ module Spree
       def configure_store
         za = Spree::Country.find_by!(iso: 'ZA')
 
+        store.url = ENV['ECLOUDMALL_STORE_URL'].sub(%r{\Ahttps?://}, '') if ENV['ECLOUDMALL_STORE_URL'].present?
         store.update!(
           name: 'EcloudMall',
           default_currency: 'ZAR',
           supported_currencies: 'ZAR',
           default_country: za,
-          customer_support_email: store.customer_support_email.presence || 'hello@ecloudmall.co.za',
-          mail_from_address: store.mail_from_address.presence || 'hello@ecloudmall.co.za',
+          customer_support_email: ENV['ECLOUDMALL_SUPPORT_EMAIL'].presence || store.customer_support_email.presence || 'hello@ecloudmall.co.za',
+          mail_from_address: ENV['SMTP_FROM_ADDRESS'].presence || store.mail_from_address.presence || 'hello@ecloudmall.co.za',
           meta_description: 'EcloudMall — the marketplace for South African small businesses. Shop local, shop proudly South African.',
           seo_title: 'EcloudMall | Shop proudly South African SMMEs'
         )
@@ -222,22 +223,29 @@ module Spree
       def configure_online_gateways
         storefront = ENV.fetch('ECLOUDMALL_STOREFRONT_URL', 'http://localhost:3001')
         store.allowed_origins.find_or_create_by!(origin: URI.parse(storefront).then { |u| "#{u.scheme}://#{u.host}" })
+        # Spree's seeds trust http://localhost; production must only redirect shoppers back to the real storefront
+        store.allowed_origins.where(origin: 'http://localhost').destroy_all if Rails.env.production?
 
+        production = Rails.env.production?
+        payfast_live_creds = ENV['PAYFAST_MERCHANT_ID'].present? && ENV['PAYFAST_MERCHANT_KEY'].present?
         gateways = [
+          # Outside production PayFast falls back to its public sandbox merchant so checkout works out of the box.
+          # In production it is only activated with real merchant credentials — a sandbox gateway there would
+          # mark orders paid without taking money.
           { klass: Spree::Gateway::Payfast, name: 'PayFast — card, Instant EFT, SnapScan, Zapper',
             description: 'Pay securely with your card, Instant EFT, SnapScan, Zapper or Mobicred via PayFast.',
             preferences: {
-              merchant_id: ENV.fetch('PAYFAST_MERCHANT_ID', '10000100'),
-              merchant_key: ENV.fetch('PAYFAST_MERCHANT_KEY', '46f0cd694581a'),
+              merchant_id: ENV.fetch('PAYFAST_MERCHANT_ID') { production ? nil : '10000100' },
+              merchant_key: ENV.fetch('PAYFAST_MERCHANT_KEY') { production ? nil : '46f0cd694581a' },
               passphrase: ENV.fetch('PAYFAST_PASSPHRASE', ''),
-              validate_with_server: ENV.fetch('PAYFAST_VALIDATE_ITN', 'true') == 'true',
-              test_mode: ENV.fetch('PAYFAST_TEST_MODE', 'true') == 'true'
-            }, active: true },
+              test_mode: ENV.fetch('PAYFAST_TEST_MODE', production ? 'false' : 'true') == 'true',
+              validate_with_server: ENV.fetch('PAYFAST_VALIDATE_ITN', 'true') == 'true'
+            }, active: production ? payfast_live_creds : true },
           { klass: Spree::Gateway::Ozow, name: 'Ozow — Instant EFT from your bank',
             description: 'Pay instantly from any major South African bank with Ozow. No card needed.',
             preferences: {
               site_code: ENV['OZOW_SITE_CODE'], private_key: ENV['OZOW_PRIVATE_KEY'], api_key: ENV['OZOW_API_KEY'],
-              test_mode: ENV.fetch('OZOW_TEST_MODE', 'true') == 'true'
+              test_mode: ENV.fetch('OZOW_TEST_MODE', production ? 'false' : 'true') == 'true'
             }, active: ENV['OZOW_SITE_CODE'].present? },
           { klass: Spree::Gateway::Yoco, name: 'Yoco — card, Apple Pay, Google Pay',
             description: 'Pay by Visa, Mastercard, Amex, Apple Pay or Google Pay, secured by Yoco.',
@@ -252,7 +260,7 @@ module Spree
           method.display_on = 'both'
           method.position = idx + 1 if method.respond_to?(:position=)
           config[:preferences].each { |key, value| method.set_preference(key, value) unless value.nil? || (value == '' && key != :passphrase) }
-          method.active = config[:active] if method.new_record? || config[:active]
+          method.active = config[:active] if method.new_record? || config[:active] || Rails.env.production?
           method.stores = [store] unless method.stores.include?(store)
           method.save!
         end

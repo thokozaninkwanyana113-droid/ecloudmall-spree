@@ -13,6 +13,7 @@ Use `/project:create-plan` and `/project:update-plan` for plan management.
 
 Current plans:
 - `ecloudmall-marketplace.md` — EcloudMall multi-seller marketplace for SA SMMEs (`Spree::Seller`, never `Spree::Vendor`)
+- `ecloudmall-production-deployment.md` — Render blueprint, `apps/backend` deployable app, fail-closed production checks, bootstrap
 - `ecloudmall-funds-flow.md` — Append-only ledger (never edit entries), payouts to sellers/partners, refunds & clawback, bank accounts
 - `ecloudmall-payments-and-logistics-partners.md` — PayFast/Ozow/Yoco hosted gateways, Paxi/Pargo partners, pickup points (never persisted), seller referrals
 - `6.0-cart-order-split.md` — Cart/Order model separation, polymorphic LineItem
@@ -51,6 +52,7 @@ Completed plans:
 | `spree/api` | Ruby gem — Store & Admin REST APIs (`spree_api`) |
 | `spree/emails` | Ruby gem — transactional emails (`spree_emails`, optional) |
 | `spree/marketplace` | Ruby gem — EcloudMall sellers, applications, commission (`spree_marketplace`) |
+| `apps/backend` | EcloudMall production Rails app (spree-starter wired to `spree/` engines; deployed via `render.yaml`) |
 | `apps/storefront` | EcloudMall Next.js storefront (`@ecloudmall/storefront`) |
 | `packages/sdk` | `@spree/sdk` — TypeScript Store API client |
 | `packages/admin-sdk` | `@spree/admin-sdk` — TypeScript Admin API client (private) |

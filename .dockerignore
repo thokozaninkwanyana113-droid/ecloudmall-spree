@@ -34,3 +34,16 @@ server/Dockerfile*
 # Ignore spec/test artifacts in gems
 spree/*/spec/dummy
 spree/**/coverage
+
+# EcloudMall: the production image (apps/backend/Dockerfile) also builds from the repo root
+**/node_modules
+**/.next
+**/.turbo
+apps/storefront/
+apps/backend/.env*
+apps/backend/log/*
+apps/backend/tmp/*
+apps/backend/storage/*
+apps/backend/public/assets
+apps/backend/app/assets/builds/*
+**/coverage
